@@ -7,4 +7,5 @@
 5.修改文件格式
    initwebupload.js
 6.软件下载地址：
+   部署版本: http://git.jeedocm.com/yfhl/docm-run
    链接: https://pan.baidu.com/s/1IEwJ7ec9YwR_e6zg0MkhAQ 提取码: 4ghx
