@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.dao.TUserGradeDao">
+    
+	<sql id="tUserGradeColumns">
+		a.id AS "id",
+		a.grade_name AS "gradeName",
+		a.start_score AS "startScore",
+		a.end_score AS "endScore",
+		a.create_time AS "createTime",
+		a.mod_time AS "modTime"
+	</sql>
+	
+	<sql id="tUserGradeJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="TUserGrade" >
+		SELECT 
+			<include refid="tUserGradeColumns"/>
+		FROM t_user_grade a
+		<include refid="tUserGradeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TUserGrade" >
+		SELECT 
+			<include refid="tUserGradeColumns"/>
+		FROM t_user_grade a
+		<include refid="tUserGradeJoins"/>
+		<where>
+			
+			<if test="gradeName != null and gradeName != ''">
+				AND a.grade_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{gradeName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{gradeName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{gradeName},'%')</if>
+			</if>
+			<if test="startScore != null and startScore != ''">
+				AND a.start_score &gt; #{startScore}
+			</if>
+			<if test="endScore != null and endScore != ''">
+				AND a.end_score  &lt;  #{endScore}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TUserGrade" >
+		SELECT 
+			<include refid="tUserGradeColumns"/>
+		FROM t_user_grade a
+		<include refid="tUserGradeJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_user_grade(
+			id,
+			grade_name,
+			start_score,
+			end_score,
+			create_time,
+			mod_time
+		) VALUES (
+			#{id},
+			#{gradeName},
+			#{startScore},
+			#{endScore},
+			#{createTime},
+			#{modTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_user_grade SET 	
+			grade_name = #{gradeName},
+			start_score = #{startScore},
+			end_score = #{endScore},
+			create_time = #{createTime},
+			mod_time = #{modTime}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_user_grade
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_user_grade SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="TUserGrade" statementType="STATEMENT">
+		select * FROM t_user_grade  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

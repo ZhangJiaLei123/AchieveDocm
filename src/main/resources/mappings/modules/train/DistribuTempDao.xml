@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.DistribuTempDao">
+    
+	<sql id="distribuTempColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.activity_dir_id AS "activityDirId",
+		a.type_id AS "typeId",
+		a.ref_id AS "refId",
+		a.res_sort AS "resSort",
+		a.res_score AS "resScore",
+		a.activity_id AS "activityId"
+	</sql>
+	
+	<sql id="distribuTempJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="DistribuTemp" >
+		SELECT 
+			<include refid="distribuTempColumns"/>
+		FROM t_distribu_temp a
+		<include refid="distribuTempJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="DistribuTemp" >
+		SELECT 
+			<include refid="distribuTempColumns"/>
+		FROM t_distribu_temp a
+		<include refid="distribuTempJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="typeId != null and typeId != ''">
+				AND a.type_id = #{typeId}
+			</if>
+			<if test="refId != null and refId != ''">
+				AND a.ref_id  = #{refId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="DistribuTemp" >
+		SELECT 
+			<include refid="distribuTempColumns"/>
+		FROM t_distribu_temp a
+		<include refid="distribuTempJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_distribu_temp(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			activity_dir_id,
+			type_id,
+			ref_id,
+			res_sort,
+			res_score,
+			activity_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{activityDirId},
+			#{typeId},
+			#{refId},
+			#{resSort},
+			#{resScore},
+			#{activityId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_distribu_temp SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			activity_dir_id = #{activityDirId},
+			type_id = #{typeId},
+			ref_id = #{refId},
+			res_sort = #{resSort},
+			res_score = #{resScore},
+			activity_id = #{activityId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_distribu_temp
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_distribu_temp SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<!-- 修改分数 -->
+	<update id="updaStorce">
+		UPDATE t_distribu_temp SET 
+			res_score = #{score}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="DistribuTemp" statementType="STATEMENT">
+		select * FROM t_distribu_temp  where ${propertyName} = '${value}'
+	</select>
+	<select id="findListForDir" resultType="DistribuTemp">
+		SELECT
+			t.id,
+			tr.name as resName,
+			t.type_id as typeId,
+			t.ref_id as refId,
+			t.res_score as resScore,
+			t.activity_dir_id as activityDirId,
+			t.activity_id as activityId
+		FROM
+			t_distribu_temp t
+		inner join t_activity_dir td on t.activity_dir_id = td.id and td.del_flag = 0
+		INNER JOIN t_resource_info tr ON t.ref_id = tr.id
+		WHERE t.del_flag = 0
+			<if test="activityDirId != null and activityDirId != ''">
+				AND t.activity_dir_id = #{activityDirId}
+				
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND t.activity_id = #{activityId}
+			</if>
+			<if test="(activityId == null or activityId == '') and (activityDirId == null or activityDirId == '')">
+				AND t.id is null
+			</if>
+		UNION All 
+		SELECT
+			t.id,
+			tr.name as resName,
+			t.type_id as typeId,
+			t.ref_id as refId,
+			t.res_score as resScore,
+			t.activity_dir_id as activityDirId,
+			t.activity_id as activityId
+		FROM
+			t_distribu_temp t
+		inner join t_activity_dir td on t.activity_dir_id = td.id and td.del_flag = 0
+		INNER JOIN t_mesan_info tr ON t.ref_id = tr.id
+		WHERE
+			t.del_flag = 0
+			<if test="activityDirId != null and activityDirId != ''">
+				AND t.activity_dir_id = #{activityDirId}
+				
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND t.activity_id = #{activityId}
+			</if>
+			<if test="(activityId == null or activityId == '') and (activityDirId == null or activityDirId == '')">
+				AND t.id is null
+			</if>
+		UNION All 
+		SELECT
+			t.id,
+			i.que_name as resName,
+			t.type_id as typeId,
+			t.ref_id as refId,
+			t.res_score as resScore,
+			t.activity_dir_id as activityDirId,
+			t.activity_id as activityId
+		FROM
+			t_distribu_temp t
+		inner join t_activity_dir td on t.activity_dir_id = td.id and td.del_flag = 0
+		INNER JOIN t_question_release tr ON t.ref_id = tr.id
+		INNER JOIN t_question_info i on tr.question_info_id = i.id
+		WHERE
+			t.del_flag = 0
+			<if test="activityDirId != null and activityDirId != ''">
+				AND t.activity_dir_id = #{activityDirId}
+				
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND t.activity_id = #{activityId}
+			</if>
+			<if test="(activityId == null or activityId == '') and (activityDirId == null or activityDirId == '')">
+				AND t.id is null
+			</if>
+	</select>
+	
+	
+	
+</mapper>

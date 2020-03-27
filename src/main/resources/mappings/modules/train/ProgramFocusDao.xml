@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.ProgramFocusDao">
+    
+	<sql id="programFocusColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_id AS "userId",
+		a.program_activity_id AS "programActivityId"
+	</sql>
+	
+	<sql id="programFocusJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="ProgramFocus" >
+		SELECT 
+			<include refid="programFocusColumns"/>
+		FROM t_program_focus a
+		<include refid="programFocusJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				And a.id = #{id}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="programActivityId != null and programActivityId != ''">
+				AND a.program_activity_id = #{programActivityId}
+			</if>
+	    </where>
+	</select>
+	
+	<select id="findList" resultType="ProgramFocus" >
+		SELECT 
+			<include refid="programFocusColumns"/>
+		FROM t_program_focus a
+		<include refid="programFocusJoins"/>
+		LEFT JOIN t_train_program b 
+        ON a.program_activity_id = b.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="programActivityId != null and programActivityId != ''">
+				AND a.program_activity_id = #{programActivityId}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND b.pro_name like
+				<if test="dbName == 'mysql'"> CONCAT('%',#{searchContent},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProgramFocus" >
+		SELECT 
+			<include refid="programFocusColumns"/>
+		FROM t_program_focus a
+		<include refid="programFocusJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_program_focus(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			program_activity_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userId},
+			#{programActivityId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_program_focus SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			user_id = #{userId},
+			program_activity_id = #{programActivityId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_program_focus
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		DELETE FROM t_program_focus
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProgramFocus" statementType="STATEMENT">
+		select * FROM t_program_focus  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

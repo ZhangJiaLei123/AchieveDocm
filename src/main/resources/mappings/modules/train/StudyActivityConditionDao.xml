@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.StudyActivityConditionDao">
+    
+	<sql id="studyActivityConditionColumns">
+		a.id AS "id",
+		a.org_check_all AS "orgCheckAll",
+		a.org_type AS "orgType",
+		a.org_typename AS "orgTypeName",
+		a.org_level AS "orgLevel",
+		a.post_name AS "postName",
+		a.post_type AS "postType",
+		a.user_check_all AS "userCheckAll",
+		a.username AS "username",
+		a.type AS "type",
+		a.study_activity_id AS "studyActivityId",
+		officeName as "officeName",
+		a.post_check_all as "postCheckAll",
+		a.isbx_user as "isBxUser",
+		a.distrct_id as "distrctId",
+		a.province_id as "provinceId",
+		a.city_id as "cityId"
+	</sql>
+	
+	<sql id="studyActivityConditionJoins">
+	
+	</sql>
+	
+    
+	<select id="get" resultType="StudyActivityCondition" >
+		SELECT 
+			<include refid="studyActivityConditionColumns"/>
+		FROM t_study_activity_condition a
+		<include refid="studyActivityConditionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="StudyActivityCondition" >
+		SELECT 
+			<include refid="studyActivityConditionColumns"/>
+		FROM t_study_activity_condition a
+		<include refid="studyActivityConditionJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="StudyActivityCondition" >
+		SELECT 
+			<include refid="studyActivityConditionColumns"/>
+		FROM t_study_activity_condition a
+		<include refid="studyActivityConditionJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_study_activity_condition(
+			id,
+			org_check_all,
+			org_type,
+			org_typename,
+			org_level,
+			area_id,
+			area_name,
+			post_name,
+			post_type,
+			user_check_all,
+			username,
+			type,
+			study_activity_id,
+			officeName,
+			post_check_all,
+			isbx_user,
+			distrct_id,
+			province_id,
+			city_id
+		) VALUES (
+			#{id},
+			#{orgCheckAll},
+			#{orgType},
+			#{orgTypeName},
+			#{orgLevel},
+			#{area.id},
+			#{area.name},
+			#{postName},
+			#{postType},
+			#{userCheckAll},
+			#{username},
+			#{type},
+			#{studyActivityId},
+			#{officeName},
+			#{postCheckAll},
+			#{isBxUser},
+			#{distrctId},
+			#{provinceId},
+			#{cityId}
+	
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_study_activity_condition SET 	
+			org_check_all = #{orgCheckAll},
+			org_type = #{orgType},
+			org_level = #{orgLevel},
+			area_id = #{area.id},
+			area_name=#{area.name},
+			post_name = #{postName},
+			post_type = #{postType},
+			user_check_all = #{userCheckAll},
+			username = #{username},
+			type = #{type},
+			officeName=#{officeName},
+			study_activity_id = #{studyActivityId},
+			post_check_all=#{postCheckAll},
+			isbx_user=#{isBxUser},
+			org_typename=#{orgTypeName},
+			distrct_id = #{distrctId},
+			province_id = #{provinceId},
+			city_id = #{cityId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_study_activity_condition
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_study_activity_condition SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="StudyActivityCondition" statementType="STATEMENT">
+		select * FROM t_study_activity_condition  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findActivityConditionByActivityId" resultType="StudyActivityCondition" parameterType="map" >
+		select 
+		<include refid="studyActivityConditionColumns"/>
+		 FROM t_study_activity_condition  a
+		LEFT JOIN sys_area area ON area.id = a.area_id
+		 where a.study_activity_id = #{studyActivityId} and a.type = #{type}
+	</select>
+	
+		<!--物理删除-->
+	<update id="deleteByActivityIdAndType" parameterType="map">
+		DELETE FROM t_study_activity_condition
+		WHERE study_activity_id = #{studyActivityId} and type = #{type}
+	</update>
+</mapper>

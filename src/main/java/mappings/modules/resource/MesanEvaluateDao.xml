@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.resource.dao.MesanEvaluateDao">
+    
+	<sql id="mesanEvaluateColumns">
+		me.id AS "id",
+		me.text AS "text",
+		me.user_id AS "userId",
+		me.mesan_id AS "mesanId",
+		me.create_date AS "createDate",
+		su.name AS "user.name",
+		su.photo AS "user.photo",
+		su.id AS "user.id"
+	</sql>
+	
+	<sql id="mesanEvaluateJoins">
+		LEFT JOIN sys_user su ON me.user_id = su.id
+	</sql>
+	
+	<select id="findMesanEvaluateListByEvaluateId" resultType="MesanEvaluate">
+		SELECT
+			<include refid="mesanEvaluateColumns"/>
+		FROM
+			t_mesan_evaluate me
+			<include refid="mesanEvaluateJoins"/>
+		<where>
+			me.mesan_id = #{mesanId}
+			AND me.del_flag = '0'
+		</where>
+		ORDER BY me.update_date DESC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_mesan_evaluate(
+			id,
+			text,
+			mesan_id,
+			user_id,
+			create_date,
+			update_date
+		) VALUES (
+			#{id},
+			#{text},
+			#{mesanId},
+			#{userId},
+			#{createDate},
+			#{updateDate}
+		)
+	</insert>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_mesan_evaluate
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_mesan_evaluate SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

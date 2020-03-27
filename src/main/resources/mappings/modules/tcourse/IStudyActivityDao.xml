@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.tcourse.dao.IStudyActivityDao">
+	
+	
+	<select id="findStudyActivit" resultType="Map">		
+		select   a.id AS "id",
+		a.create_by AS "createBy",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.pro_name AS "proName",
+		a.pro_type AS "proType",
+		a.gz_start_time AS "gzStartTime",
+		a.gz_end_time AS "gzEndTime",
+		a.pro_release AS "proRelease",
+		a.status AS "status"
+		FROM t_train_program a 
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_user_office suo ON u.office_id = suo.office_id
+	
+		where a.del_flag = 0 	
+		<!-- AND suo.user_id =  #{bizEntity.createBy} -->
+		<if test="bizEntity.proName != '' and bizEntity.proName != null">
+			and a.pro_name = #{bizEntity.proName}
+		</if>
+		</select>
+		
+	<select id="findTrainProgramById" resultType="Map">		
+		select   a.id AS "id",
+		a.create_by AS "createBy",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.pro_name AS "proName",
+		a.pro_type AS "proType",
+		a.gz_start_time AS "gzStartTime",
+		a.gz_end_time AS "gzEndTime",
+		a.pro_release AS "proRelease",
+		a.status AS "status"
+		FROM t_train_program a where a.id = #{id}
+	</select>
+	
+	<select id="findProgramActivityByProgramId" resultType="map">
+		select a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.space AS "space",
+		a.user_count AS "userCount",
+		a.pro_time AS "proTime",
+		a.train_program_id AS "trainProgramId"
+		from t_program_activity a
+		where a.del_flag = 0
+		<if test="trainProgramId != null and trainProgramId != ''">
+				AND a.train_program_id = #{trainProgramId}
+		</if>
+	</select>
+</mapper>

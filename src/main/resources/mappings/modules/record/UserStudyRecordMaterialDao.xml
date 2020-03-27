@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.record.dao.UserStudyRecordMaterialDao">
+    
+	<sql id="userStudyRecordMaterialColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_id AS "userId",
+		a.mesan_id AS "mesanId",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime"
+	</sql>
+	
+	<sql id="userStudyRecordMaterialJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="UserStudyRecordMaterial" >
+		SELECT 
+			<include refid="userStudyRecordMaterialColumns"/>
+		FROM t_user_study_record_material a
+		<include refid="userStudyRecordMaterialJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="UserStudyRecordMaterial" >
+		SELECT 
+			<include refid="userStudyRecordMaterialColumns"/>
+		FROM t_user_study_record_material a
+		<include refid="userStudyRecordMaterialJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UserStudyRecordMaterial" >
+		SELECT 
+			<include refid="userStudyRecordMaterialColumns"/>
+		FROM t_user_study_record_material a
+		<include refid="userStudyRecordMaterialJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_user_study_record_material(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			mesan_id,
+			start_time,
+			end_time
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userId},
+			#{mesanId},
+			#{startTime},
+			#{endTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_user_study_record_material SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			user_id = #{userId},
+			mesan_id = #{mesanId},
+			start_time = #{startTime},
+			end_time = #{endTime}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_user_study_record_material
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_user_study_record_material SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="UserStudyRecordMaterial" statementType="STATEMENT">
+		select * FROM t_user_study_record_material  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 获得最近的一条数据 -->
+	<select id="getCurrentDate" resultType="UserStudyRecordMaterial" >
+		SELECT 
+			<include refid="userStudyRecordMaterialColumns"/>
+		FROM t_user_study_record_material a
+		<include refid="userStudyRecordMaterialJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="mesanId != null and mesanId != ''">
+				AND a.mesan_id = #{mesanId}
+			</if>
+		</where>
+		order by a.start_time DESC
+		LIMIT 1
+	</select>
+</mapper>

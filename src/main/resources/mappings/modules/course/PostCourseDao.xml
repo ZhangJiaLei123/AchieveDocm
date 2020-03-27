@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.PostCourseDao">
+    
+	<sql id="postCourseColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.post_id AS "postId",
+		a.course_id AS "courseId",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="postCourseJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="PostCourse" >
+		SELECT 
+			<include refid="postCourseColumns"/>
+		FROM t_post_course a
+		<include refid="postCourseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PostCourse" >
+		SELECT 
+			<include refid="postCourseColumns"/>
+		FROM t_post_course a
+		<include refid="postCourseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="postId != null and postId != ''">
+				AND a.post_id = #{postId}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PostCourse" >
+		SELECT 
+			<include refid="postCourseColumns"/>
+		FROM t_post_course a
+		<include refid="postCourseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_post_course(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			post_id,
+			course_id,
+			type
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{postId},
+			#{courseId},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_post_course SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			post_id = #{postId},
+			course_id = #{courseId},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_post_course
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_post_course SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<!--根据课程ID删除-->
+	<update id="deletePostCourseByCourseId">
+		DELETE FROM t_post_course
+		WHERE course_id = #{courseId} and type=#{type}
+	</update>
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="PostCourse" statementType="STATEMENT">
+		select * FROM t_post_course  where ${propertyName} = '${value}'
+	</select>
+	<select id="findPostCourse" resultType="PostCourse">
+		SELECT
+			pi. NAME AS postName,
+			pl. NAME AS postLevelName,pl.id as postLevel
+		FROM
+			t_course_info a
+		INNER JOIN t_post_course pc ON a.id = pc.course_id
+		INNER JOIN t_post_level pl ON pc.post_id = pl.id
+		INNER JOIN t_post_info pi ON pi.id = pl.postinfo_id
+		where a.id = #{courseId} and pc.type =#{type}
+	</select>
+	
+</mapper>

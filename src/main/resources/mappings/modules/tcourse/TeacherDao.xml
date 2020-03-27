@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.tcourse.dao.TeacherDao">
+	
+	<select id="findNewCourseInfo" resultType="Map" >
+		SELECT
+			t.id,
+			t.cou_name,
+			t.cou_describe,
+			u.name as userName,
+			t.stu_start_time,
+			t.stu_end_time,
+			REPLACE (t.stu_img, '|', '') AS "stu_img",
+			count(c.userid) AS count
+		FROM
+			t_course_info t
+		LEFT JOIN sys_user u ON t.create_by = u.id
+		LEFT JOIN (
+			SELECT DISTINCT
+				courseid,
+				userid
+			FROM
+				(
+					(
+						SELECT
+							t.id AS courseid,
+							u.id AS userid
+						FROM
+							t_course_info t
+						INNER JOIN t_user_course tu ON t.id = tu.course_id
+						AND tu.type = 1
+						INNER JOIN sys_user u ON u.id = tu.user_id
+						INNER JOIN sys_office o ON u.office_id = o.id
+					)
+					UNION ALL
+						(
+							SELECT
+								t.course_id AS courseid,
+								u.id AS userid
+							FROM
+								t_user_course_reg t
+							INNER JOIN sys_user u ON t.create_by = u.id
+							INNER JOIN sys_office o ON o.id = u.office_id
+							WHERE
+								t.audit_state = 1
+						)
+				) t
+		) c on t.id = c.courseid
+		inner join t_approval_record ta on t.id = ta.resource_id and ta.status = 0
+		GROUP BY
+			t.id
+		ORDER BY
+			t.stu_start_time DESC
+	</select>
+	
+	<select id="findCourseImg" resultType="Map" >
+		SELECT
+			a.id AS "id",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a.title AS "title",
+			a.url AS "url",
+			replace(a.img,'|','') AS "img",
+			a.sort AS "sort"
+		FROM
+			t_carousel_img a
+		WHERE
+			a.del_flag = 0
+			order by sort asc
+	</select>
+	
+	<select id="findCourseInfoIng" resultType="Map" >
+		SELECT
+			t.id,
+			t.cou_name,
+			t.cou_describe,
+			u.name as userName,
+			t.stu_start_time,
+			t.stu_end_time,
+			REPLACE (t.stu_img, '|', '') AS "stu_img",
+			count(c.userid) AS count
+		FROM
+			t_course_info t
+		LEFT JOIN sys_user u ON t.create_by = u.id
+		LEFT JOIN (
+			SELECT DISTINCT
+				courseid,
+				userid
+			FROM
+				(
+					(
+						SELECT
+							t.id AS courseid,
+							u.id AS userid
+						FROM
+							t_course_info t
+						INNER JOIN t_user_course tu ON t.id = tu.course_id
+						AND tu.type = 1
+						INNER JOIN sys_user u ON u.id = tu.user_id
+						INNER JOIN sys_office o ON u.office_id = o.id
+					)
+					UNION ALL
+						(
+							SELECT
+								t.course_id AS courseid,
+								u.id AS userid
+							FROM
+								t_user_course_reg t
+							INNER JOIN sys_user u ON t.create_by = u.id
+							INNER JOIN sys_office o ON o.id = u.office_id
+							WHERE
+								t.audit_state = 1
+						)
+				) t
+		) c on t.id = c.courseid
+		inner join t_approval_record ta on t.id = ta.resource_id and ta.status = 0
+		where 
+		t.stu_start_time >= CURDATE()
+			AND t.stu_end_time >= CURDATE()
+		GROUP BY
+			t.id
+		ORDER BY
+			count desc ,t.stu_start_time DESC
+
+	</select>
+	
+	<select id="findOfficeList" resultType="Map" >
+		select a.id,
+		 a.parent_id AS "parent.id",
+		 p. NAME AS parentName,
+		 a.parent_ids,
+		 a.area_id AS "area.id",
+		 a.xs_code AS xsCode,
+		 a.legal_person AS legalPerson,
+		 a.contacts AS contacts,
+		 a.area_code AS areaCode,
+		 a.brand AS brand,
+		 a.phone24,
+		 a.fed_level AS fedLevel,
+		 a. CODE AS "code",
+		 a. NAME AS "name",
+		 a.sort,
+		 a.type,
+		 a.grade,
+		 a.address,
+		 a.zip_code,
+		 a. MASTER AS "master",
+		 a.phone,
+		 a.fax,
+		 a.email,
+		 a.remarks,
+		 a.create_by AS "createBy.id",
+		 a.create_date,
+		 a.update_by AS "updateBy.id",
+		 a.update_date,
+		 a.del_flag,
+		 a.del_flag AS isDel,
+		 a.useable AS useable,
+		 a.primary_person AS "primaryPerson.id",
+		 a.deputy_person AS "deputyPerson.id",
+		 p. NAME AS "officeTypeName",
+		 a.office_type AS "officeType",
+		 ar. NAME AS "area.name",
+		 ar.parent_ids AS "area.parentIds",
+		 pp. NAME AS "primaryPerson.name",
+		 dp. NAME AS "deputyPerson.name",
+		 ar. NAME AS SQ,
+		 par. NAME AS SF,
+		 ppar. NAME AS DQ
+		FROM
+			sys_office a
+		LEFT JOIN sys_office_type p ON p.id = a.office_type
+		LEFT JOIN sys_area ar ON ar.id = a.area_id
+		LEFT JOIN sys_area par ON ar.parent_id = par.id
+		LEFT JOIN sys_area ppar ON par.parent_id = ppar.id
+		LEFT JOIN sys_user pp ON pp.id = a.primary_person
+		LEFT JOIN sys_user dp ON dp.id = a.deputy_person
+		left join sys_user_office suo on a.id = suo.office_id
+		WHERE
+			a.del_flag = 0 and suo.user_id = #{bizEntity.userid}
+		<if test="bizEntity.name != '' and bizEntity.name != null">
+			and a.NAME = #{bizEntity.name}
+		</if>
+		<if test="bizEntity.officeTypeId != '' and bizEntity.officeTypeId != null">
+			and a.office_type = #{bizEntity.officeTypeId}
+		</if>
+	</select>
+	<select id="findUserList" resultType="Map">
+			select	a.id,
+			 a.login_name,
+			 a. NO,
+			 a.name,
+			 a.email,
+			 a.phone,
+			 a.mobile,
+			 a.user_type,
+			 a.login_ip,
+			 a.login_date,
+			 a.remarks,
+			 a.login_flag,
+			 a.photo,
+			 a.qrcode,
+			 a.create_date,
+			 a.update_date,
+			 a.del_flag,
+			 a.id_num AS "idNum",
+			 a.entry_date AS "entryDate",
+			 a.filing_date AS "filingDate",
+			 a.family_name AS "familyName",
+			 pi. NAME AS "postName",
+			 t. NAME AS "officeTypeName",
+			 o. NAME AS "officeName",
+			 r. NAME AS "roleName",
+			 ta. STATUS AS "shStatus",
+			 l.name AS "postLevelName"
+			FROM sys_user a
+					LEFT JOIN sys_office o ON o.id = a.office_id
+					LEFT JOIN sys_area oa ON oa.id = o.area_id
+					LEFT JOIN sys_office_type t on o.office_type = t.id
+					LEFT JOIN sys_user_post up on a.id = up.user_id and up.is_default='1'
+					LEFT JOIN t_post_info pi on pi.id = up.post_id
+					LEFT JOIN sys_user_role ur on ur.user_id = a.id
+					LEFT JOIN sys_role r on r.id = ur.role_id
+					LEFT JOIN t_approval_record ta on a.id = ta.resource_id
+					LEFT JOIN t_post_level l on l.id = up.post_level
+					left join sys_user_office suo on o.id = suo.office_id
+			where a.login_name !='admin' and suo.user_id = #{bizEntity.userid}
+		<if test="bizEntity.userName != '' and bizEntity.userName != null">
+			and a.NAME = #{bizEntity.userName}
+		</if>
+		<if test="bizEntity.officeName != '' and bizEntity.officeName != null">
+			and o.NAME = #{bizEntity.officeName}
+		</if>
+		<if test="bizEntity.officeTypeId != '' and bizEntity.officeTypeId != null">
+			and t.id = #{bizEntity.officeTypeId}
+		</if>
+	</select>
+		<select id="findOfficeById" resultType="Map" >
+		select a.id,
+		 p.NAME AS parentName,
+		 a.parent_ids,
+		 a.xs_code AS xsCode,
+		 a.legal_person AS legalPerson,
+		 a.contacts AS contacts,
+		 a.area_code AS areaCode,
+		 a.brand AS brand,
+		 a.phone24,
+		 a.fed_level AS fedLevel,
+		 a.CODE AS "code",
+		 a.NAME AS "name",
+		 a.sort,
+		 a.type,
+		 a.grade,
+		 a.address,
+		 a.zip_code,
+		 a. MASTER AS "master",
+		 a.phone,
+		 a.fax,
+		 a.email,
+		 a.remarks,
+		 a.create_date,
+		 a.update_date,
+		 a.del_flag,
+		 a.del_flag AS isDel,
+		 a.useable AS useable,
+		 p.NAME AS "officeTypeName",
+		 a.office_type AS "officeType",
+		 ar.NAME AS "area.name",
+		 ar.NAME AS SQ,
+		 par.NAME AS SF,
+		 ppar.NAME AS DQ
+		FROM
+			sys_office a
+		LEFT JOIN sys_office_type p ON p.id = a.office_type
+		LEFT JOIN sys_area ar ON ar.id = a.area_id
+		LEFT JOIN sys_area par ON ar.parent_id = par.id
+		LEFT JOIN sys_area ppar ON par.parent_id = ppar.id
+		LEFT JOIN sys_user pp ON pp.id = a.primary_person
+		LEFT JOIN sys_user dp ON dp.id = a.deputy_person
+		WHERE
+			 a.id = #{id}
+	</select>
+	<select id="findUserById" resultType="Map">
+			select	a.id,
+			 a.login_name,
+			 a. NO,
+			 a.name,
+			 a.email,
+			 a.phone,
+			 a.mobile,
+			 a.user_type,
+			 a.login_ip,
+			 a.login_date,
+			 a.remarks,
+			 a.login_flag,
+			 a.sex,
+			 a.photo,
+			 a.qrcode,
+			 a.create_date,
+			 a.update_date,
+			 a.del_flag,
+			 a.id_num AS "idNum",
+			 a.entry_date AS "entryDate",
+			 a.filing_date AS "filingDate",
+			 a.family_name AS "familyName",
+			 pi. NAME AS "postName",
+			 t. NAME AS "officeTypeName",
+			 o. NAME AS "officeName",
+			 r. NAME AS "roleName",
+			 ta. STATUS AS "shStatus",
+			 l.name AS "postLevelName"
+			FROM sys_user a
+					LEFT JOIN sys_office o ON o.id = a.office_id
+					LEFT JOIN sys_area oa ON oa.id = o.area_id
+					LEFT JOIN sys_office_type t on o.office_type = t.id
+					LEFT JOIN sys_user_post up on a.id = up.user_id and up.is_default='1'
+					LEFT JOIN t_post_info pi on pi.id = up.post_id
+					LEFT JOIN sys_user_role ur on ur.user_id = a.id
+					LEFT JOIN sys_role r on r.id = ur.role_id
+					LEFT JOIN t_approval_record ta on a.id = ta.resource_id
+					LEFT JOIN t_post_level l on l.id = up.post_level
+			where a.login_name !='admin'
+			and a.id = #{id}
+	</select>
+	<select id="findPostILTList" resultType="Map">
+		SELECT
+			u.id,
+			ti.name as postInfoName,
+			tl.`name` as postLevelName,
+			d.label as postTypeName
+		FROM
+			sys_user u
+		LEFT JOIN sys_user_post up ON u.id = up.user_id
+		LEFT JOIN t_post_info ti ON ti.id = up.post_id
+		LEFT JOIN t_post_level tl ON tl.id = up.post_level
+		LEFT JOIN sys_dict d ON d.VALUE	= up.post_type
+		AND d.type = 'post_type'
+		where u.id = #{userId}
+		ORDER BY
+			up.is_default DESC
+	</select>
+	
+	<select id="findTreeOffice" resultType="Map">	
+	SELECT
+		t.id,
+		t. NAME as name,
+		t.parent_id as pId ,if(count(ot.id)>0,'true','false') as nocheck from sys_office_type t
+		LEFT JOIN  sys_office_type ot ON t.id = ot.parent_id
+		where t.del_flag =0
+		group by t.id,
+			t. NAME,
+			t.parent_id
+	</select>
+	
+	<select id="findResourceDirTree" resultType="Map">	
+	SELECT
+		t.id,
+		t. NAME as name,
+		t.parent_id AS pId,
+		IF (count(d.id) > 0, 'true', 'false') AS nocheck
+		FROM
+			t_resource_dir t
+		LEFT JOIN t_resource_dir d ON t.id = d.parent_id
+		where  t.del_flag =0
+		GROUP BY
+			d.id
+	</select>
+	
+	
+	
+	
+	<select id="findStudyResource" resultType="Map">		
+		SELECT
+			DISTINCT
+			a.id AS "id",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			u. NAME AS "updateBy.name",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a. NAME AS "name",
+			a.resource_type AS "resourceType",
+			a.resource_dir AS "resourceDir",
+			d. NAME AS "resourceDirName",
+			a.resource_url AS "resourceUrl",
+			a.is_release AS "isRelease",
+			a.is_public AS "isPublic",
+			a.resource_code AS "resourceCode",
+			r. STATUS AS "resourceStatus",
+			a.resource_swf_url AS "resourceSwfUrl",
+			a.is_submit AS "isSubmit"
+		FROM
+			t_resource_info a
+		LEFT JOIN sys_user u ON a.update_by = u.id
+		LEFT JOIN t_resource_dir d ON a.resource_dir = d.id
+		LEFT JOIN (select * from t_approval_record rr where rr.del_flag = 0 ) r ON a.id = r.resource_id
+		left join sys_user uc on a.create_by = uc.id
+		left join sys_office so on  uc.office_id = so.id
+		left join sys_user_office suo on suo.office_id = so.id
+		where  a.del_flag = 0 
+		<if  test="bizEntity.userId != '' and bizEntity.userId != null">
+			and a.create_by= #{bizEntity.userId}
+		</if>
+		<if  test="bizEntity.isPublic != '' and bizEntity.isPublic != null">
+			and a.is_public= #{bizEntity.isPublic}
+		</if>
+		<if test="bizEntity.name != '' and bizEntity.name != null">
+			and a.NAME = #{bizEntity.name}
+		</if> 
+		<if test="bizEntity.resourceType != null and bizEntity.resourceType != '' ">
+			and a.resource_type = #{bizEntity.resourceType}
+		</if>
+		<if test="bizEntity.create_by != null and bizEntity.create_by != '' ">
+			and a.create_by = #{bizEntity.create_by}
+		</if>
+		<if test="bizEntity.userid != null and bizEntity.userid != '' ">
+			or suo.user_id = #{bizEntity.userid}
+		</if>
+		ORDER BY a.create_date DESC
+	</select>
+	
+	<select id="findResourseById" resultType="Map">	
+		SELECT
+			a.id AS "id",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			u. NAME AS "updateBy.name",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a. NAME AS "name",
+			a.resource_type AS "resourceType",
+			a.resource_dir AS "resourceDir",
+			d. NAME AS "resourceDirName",
+			a.resource_url AS "resourceUrl",
+			a.is_release AS "isRelease",
+			a.is_public AS "isPublic",
+			a.resource_code AS "resourceCode",
+			r. STATUS AS "resourceStatus",
+			a.resource_swf_url AS "resourceSwfUrl"
+		FROM
+			t_resource_info a
+		LEFT JOIN sys_user u ON a.update_by = u.id
+		LEFT JOIN t_resource_dir d ON a.resource_dir = d.id
+		LEFT JOIN t_approval_record r ON a.id = r.resource_id
+		where  a.del_flag = 0 and a.id = #{id}
+	</select>	
+	<select id="findMesanInfo" resultType="Map">		
+		SELECT a.id AS "id",
+			a.create_by AS "createBy.id",
+			u.name AS "createBy.name",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a.name AS "name",
+			a.mesan_url AS "mesanUrl",
+			t.status AS "approvalStatus"
+			FROM t_mesan_info a
+			LEFT JOIN sys_user u on a.create_by = u.id
+					LEFT JOIN t_approval_record t on a.id = t.resource_id
+			where a.del_flag = 0 and t.status = '0'
+			<if test="bizEntity.name != '' and bizEntity.name != null">
+				and a.name = #{bizEntity.name}
+			</if> 
+			<if test="bizEntity.create_by != '' and bizEntity.create_by != null">
+				and a.create_by = #{bizEntity.create_by}
+			</if> 
+			order by a.create_date DESC
+		</select>
+		
+		<select id="findMyMesanInfo" resultType="Map">		
+		SELECT a.id AS "id",
+			a.create_by AS "createBy.id",
+			u.name AS "createBy.name",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a.name AS "name",
+			a.mesan_url AS "mesanUrl",
+			t.status AS "approvalStatus"
+			FROM t_mesan_info a
+			LEFT JOIN sys_user u on a.create_by = u.id
+					LEFT JOIN (select * from t_approval_record tt where tt.del_flag=0)
+					t on a.id = t.resource_id
+			where a.del_flag != 1
+			<if  test="bizEntity.userId != '' and bizEntity.userId != null">
+				and a.create_by= #{bizEntity.userId}
+			</if>
+			<if test="bizEntity.name != '' and bizEntity.name != null">
+				and a.name = #{bizEntity.name}
+			</if> 
+			order by a.create_date DESC
+		</select>
+		
+		<select id="findUserByLoginName" resultType="Map">
+		select id,login_name as loginName,password,name from sys_user where login_name = #{loginName}
+		
+		</select>
+		
+		<select id="findAppRecByResId" resultType="Map">
+			select * from t_approval_record where resource_id = #{id}
+		</select>
+			<!--逻辑删除-->
+	<update id="deleteResourceById">
+		UPDATE t_resource_info SET 
+			del_flag = "1"
+		WHERE id = #{id}
+	</update>
+		<!--发布或取消发布-->
+	<update id="fbResourceById">
+		UPDATE t_resource_info SET 
+			is_public = #{isPublic}
+		WHERE id = #{id}
+	</update>
+	
+	<!--添加文件swf路径-->
+	<update id="saveResourceSwfById">
+		UPDATE t_resource_info SET 
+			resource_swf_url = #{swfUrl}
+		WHERE id = #{id}
+	</update>
+	
+	<insert id="saveResourceInfo">
+		INSERT INTO t_resource_info(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			resource_type,
+			resource_dir,
+			resource_url,
+			is_release,
+			is_public,
+			resource_code,
+			resource_swf_url
+		) VALUES (
+			#{id},
+			#{createBy},
+			#{createDate},
+			#{updateBy},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{resourceType},
+			#{resourceDir},
+			#{resourceUrl},
+			#{isRelease},
+			#{isPublic},
+			#{resourceCode},
+			#{resourceSwfUrl}
+		)
+	</insert>
+	
+	<update id="updateResourceInfo">
+		UPDATE t_resource_info SET 	
+			update_by = #{id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			resource_type = #{resourceType},
+			resource_dir = #{resourceDir},
+			resource_url = #{resourceUrl},
+			is_release = #{isRelease},
+			is_public = #{isPublic},
+			resource_code = #{resourceCode},
+			resource_swf_url = #{resourceSwfUrl}
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteMesanInfoById">
+		UPDATE t_mesan_info SET 
+			del_flag = 1
+		WHERE id = #{id}
+	</update>
+	
+	<insert id="insertMesanInfo">
+		INSERT INTO t_mesan_info(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			mesan_url
+		) VALUES (
+			#{id},
+			#{createBy},
+			#{createDate},
+			#{updateBy},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{mesanUrl}
+		)
+	</insert>
+	
+	<update id="updateMesanInfo">
+		UPDATE t_mesan_info SET 	
+			update_by = #{updateBy},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			mesan_url = #{mesanUrl}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findMesanInfoById" resultType="Map">		
+		SELECT a.id AS "id",
+			a.create_by AS "createBy.id",
+			u.name AS "createBy.name",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a.name AS "name",
+			a.mesan_url AS "mesanUrl",
+			t.status AS "approvalStatus"
+			FROM t_mesan_info a
+			LEFT JOIN sys_user u on a.create_by = u.id
+					LEFT JOIN t_approval_record t on a.id = t.resource_id
+			where  a.id = #{id}
+		</select>
+</mapper>

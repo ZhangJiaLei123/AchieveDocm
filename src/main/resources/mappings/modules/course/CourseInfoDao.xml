@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.CourseInfoDao">
+    
+	<sql id="courseInfoColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		u.name AS "updateBy.name",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.cou_name AS "couName",
+		a.cou_describe AS "couDescribe",
+		a.res_resource AS "resResource",
+		a.reg_start_time AS "regStartTime",
+		a.reg_end_time AS "regEndTime",
+		a.stu_start_time AS "stuStartTime",
+		a.stu_end_time AS "stuEndTime",
+		a.is_bxuser AS "isBxUser",
+		a.is_xxuser AS "isXxUser",
+		replace(a.stu_img,'|','') AS "stuImg",
+		a.user_role AS "userRole",
+		a.cou_status AS "couStatus",
+		a.by_mark AS "byMark",
+		a.by_standard AS "byStandard",
+		t.name as "resResourceName",
+		t.id as "resourceId",
+		r.status as "resourceStatus",
+		a.is_createadmin as "isCreateAdmin",
+		a.is_fb as "isFb",
+		ut.id as "teacher",ut.name AS "actUser",a.is_importuser isImportUser,a.is_importxxuser as isImportXxUser
+	</sql>
+	
+	<sql id="courseInfoJoins">
+		LEFT JOIN t_resource_info t on a.res_resource = t.id
+		LEFT JOIN sys_user u on u.id = a.create_by
+		LEFT JOIN t_approval_record r on a.id = r.resource_id 
+		LEFT JOIN sys_user ut on ut.id = a.teacher
+	</sql>
+	
+    
+	<select id="get" resultType="CourseInfo" >
+		SELECT 
+			<include refid="courseInfoColumns"/>
+		FROM t_course_info a
+		<include refid="courseInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CourseInfo" >
+		SELECT 
+			<include refid="courseInfoColumns"/>
+		FROM t_course_info a
+		<include refid="courseInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="couName != null and couName != ''">
+				AND a.cou_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{couName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{couName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{couName},'%')</if>
+			</if>
+			<if test="stuStartTime != null and stuStartTime != ''">
+				AND a.stu_start_time &lt; #{stuStartTime}
+			</if>
+			<if test="stuEndTime != null and stuEndTime != ''">
+				AND  a.stu_end_time &gt; #{stuEndTime}
+			</if>
+			<if test="updateBy != null and updateBy != ''">
+				AND a.update_by = #{updateBy.id}
+			</if>
+			<if test="resourceStatus != null and resourceStatus != ''">
+				AND r.status = #{resourceStatus}
+			</if>
+			<if test="resResource != null and resResource != ''">
+				AND a.res_resource = #{resResource}
+			</if>
+			${sqlMap.dataScopeFileForJgSystemForStudyActive}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+<!-- 				ORDER BY a.stu_end_time,a.update_date DESC -->
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findMyCourseInfoPage" resultType="CourseInfo" >
+		SELECT 
+			<include refid="courseInfoColumns"/>
+		FROM t_course_info a
+		<include refid="courseInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="couName != null and couName != ''">
+				AND a.cou_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{couName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{couName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{couName},'%')</if>
+			</if>
+			<if test="stuStartTime != null and stuStartTime != ''">
+				AND a.stu_start_time &lt; #{stuStartTime}
+			</if>
+			<if test="updateBy != null and updateBy != ''">
+				AND a.update_by = #{updateBy.id}
+			</if>
+			and a.create_by = #{currentUser.id}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findTeacherPage" resultType="CourseInfo" >
+		SELECT 
+			<include refid="courseInfoColumns"/>
+			FROM t_course_info a
+			<include refid="courseInfoJoins"/>
+			LEFT JOIN sys_user_office suo on u.office_id = suo.office_id and suo.user_id = #{createBy.id}
+	
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="couName != null and couName != ''">
+				AND a.cou_name = #{couName}
+			</if>
+			<if test="stuStartTime != null and stuStartTime != ''">
+				AND a.stu_start_time &lt; #{stuStartTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findMyTeacherPage" resultType="CourseInfo" >
+		SELECT 
+			<include refid="courseInfoColumns"/>
+			FROM t_course_info a
+			<include refid="courseInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="couName != null and couName != ''">
+				AND a.cou_name = #{couName}
+			</if>
+			<if test="stuStartTime != null and stuStartTime != ''">
+				AND a.stu_start_time &lt; #{stuStartTime}
+			</if>
+			<if test="createBy != null and createBy != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CourseInfo" >
+		SELECT 
+			<include refid="courseInfoColumns"/>
+		FROM t_course_info a
+		<include refid="courseInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_course_info(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			cou_name,
+			cou_describe,
+			res_resource,
+			reg_start_time,
+			reg_end_time,
+			stu_start_time,
+			stu_end_time,
+			is_bxuser,
+			is_xxuser,
+			stu_img,
+			user_role,
+			cou_status,
+			by_mark, 
+			by_standard,
+			is_fb,teacher,is_importuser,is_importxxuser,is_createadmin
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{couName},
+			#{couDescribe},
+			#{resResource},
+			#{regStartTime},
+			#{regEndTime},
+			#{stuStartTime},
+			#{stuEndTime},
+			#{isBxUser},
+			#{isXxUser},
+			#{stuImg},
+			#{userRole},
+			#{couStatus},
+			#{byMark},
+			#{byStandard},
+			#{isFb},#{teacher},#{isImportUser},#{isImportXxUser},#{isCreateAdmin}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_course_info SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			cou_name = #{couName},
+			cou_describe = #{couDescribe},
+			res_resource = #{resResource},
+			reg_start_time = #{regStartTime},
+			reg_end_time = #{regEndTime},
+			stu_start_time = #{stuStartTime},
+			stu_end_time = #{stuEndTime},
+			stu_img = #{stuImg},
+			user_role = #{userRole},
+			cou_status = #{couStatus},
+			by_mark = #{byMark}, 
+			by_standard = #{byStandard},
+			is_bxuser =#{isBxUser} ,
+			is_xxuser = #{isXxUser},
+			is_fb = #{isFb},
+			teacher=#{teacher},
+			is_importuser=#{isImportUser},
+			is_importxxuser= #{isImportXxUser}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_course_info
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_course_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<!--发布课程-->
+	<update id="fbCourseInfoById">
+		UPDATE t_course_info SET 
+			is_fb = '1'
+		WHERE id = #{id}
+	</update>
+	
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="CourseInfo" statementType="STATEMENT">
+		select * FROM t_course_info  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 查询审核通过的课程信息 -->
+	
+	
+	
+	<select id="courseInfoIsShSuccess" resultType="CourseInfo" >
+		SELECT 
+			<include refid="courseInfoColumns"/>
+		FROM t_course_info a
+		<include refid="courseInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and r.status =  #{resourceStatus}
+			<if test="couName != null and couName != ''">
+				AND a.cou_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{couName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{couName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{couName},'%')</if>
+			</if>
+			<if test="stuStartTime != null and stuStartTime != ''">
+				AND a.stu_start_time &lt; #{stuStartTime}
+			</if>
+			<if test="updateBy != null and updateBy != ''">
+				AND a.update_by = #{updateBy.id}
+			</if>
+			${sqlMap.dataScopeFileForOffice} 
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="courseStudyTime" resultType="CourseInfo" >
+		select * from (SELECT
+			t.id,
+			t.cou_name as couName,
+			SUM(
+				UNIX_TIMESTAMP(ts.end_time) - UNIX_TIMESTAMP(ts.start_time)
+			) AS courseTime
+		FROM
+			t_course_info t
+		LEFT JOIN t_study_record ts ON t.id = ts.course_id
+		where ts.user_id = #{userId}
+		GROUP BY
+			t.id
+		)t
+		<where>
+		<if test="couName != null and couName != ''">
+			AND t.couName LIKE 
+				<if test="dbName == 'oracle'">'%'||#{couName}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{couName}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{couName},'%')</if>
+		</if>
+		
+		AND t.courseTime >= 60
+		</where>
+		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY courseTime DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

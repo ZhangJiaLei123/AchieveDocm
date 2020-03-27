@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.ActivityDirDao">
+    
+	<sql id="activityDirColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.activity_id AS "activityId",
+		a.dir_name AS "dirName",
+		a.parent_id AS "parentId"
+	</sql>
+	
+	<sql id="activityDirJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="ActivityDir" >
+		SELECT 
+			<include refid="activityDirColumns"/>
+		FROM t_activity_dir a
+		<include refid="activityDirJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getListForLessionId" resultType="ActivityDir" >
+		SELECT
+			a.id AS "id",
+					a.create_by AS "createBy.id",
+					a.create_date AS "createDate",
+					a.update_by AS "updateBy.id",
+					a.update_date AS "updateDate",
+					a.remarks AS "remarks",
+					a.del_flag AS "delFlag",
+					a.activity_id AS "activityId",
+					a.dir_name AS "dirName",
+					a.parent_id AS "parentId",
+					t.id as "lessionTimeId",
+					count(td.id) as coutRes
+		FROM
+			t_lessson_time t
+		INNER JOIN t_lessson_dir d ON t.id = d.lesson_time_id
+		INNER JOIN t_activity_dir a ON d.activity_dir_id = a.id
+		left join t_distribu_temp td on a.id = td.activity_dir_id and td.del_flag = 0
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND t.id = #{lessionTimeId}
+			<if test="parentId != null and parentId != ''">
+				AND a.parent_id = #{parentId}
+			</if>
+		</where>
+		group by a.id
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date 
+			</otherwise>
+			
+		</choose>
+	</select>
+	
+	<select id="getListAllDirForLessionId" resultType="ActivityDir" >
+		SELECT
+			a.id AS "id",
+					a.create_by AS "createBy.id",
+					a.create_date AS "createDate",
+					a.update_by AS "updateBy.id",
+					a.update_date AS "updateDate",
+					a.remarks AS "remarks",
+					a.del_flag AS "delFlag",
+					a.activity_id AS "activityId",
+					a.dir_name AS "dirName",
+					a.parent_id AS "parentId",
+					t.id as "lessionTimeId",
+					count(td.id) as coutRes
+		FROM
+			t_lessson_time t
+		INNER JOIN t_lessson_dir d ON t.id = d.lesson_time_id
+		INNER JOIN t_activity_dir a ON d.activity_dir_id = a.id
+		left join t_distribu_temp td on a.id = td.activity_dir_id and td.del_flag = 0
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND t.id = #{lessionTimeId}
+		</where>
+		group by a.id
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date 
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findList" resultType="ActivityDir" >
+		SELECT
+			a.id AS "id",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a.activity_id AS "activityId",
+			a.dir_name AS "dirName",
+			a.parent_id AS "parentId",
+			count(t.id) as coutRes,
+			sum(t.res_score) as resSorce
+			FROM
+				t_activity_dir a left join t_distribu_temp t on a.id = t.activity_dir_id and t.del_flag = 0
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="parentId != null and parentId != ''">
+				AND a.parent_id = #{parentId}
+			</if>
+		</where>
+		group by a.id
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date 
+			</otherwise>
+			
+		</choose>
+	</select>
+	
+	<select id="findListUserScore" resultType="ActivityDir" >
+		SELECT
+			a.id AS "id",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a.activity_id AS "activityId",
+			a.dir_name AS "dirName",
+			a.parent_id AS "parentId",
+			count(t.id) as coutRes,
+			sum(t.res_score) as resSorce,
+			tt.score as userSorce
+			FROM
+				t_activity_dir a left join t_distribu_temp t on a.id = t.activity_dir_id and t.del_flag = 0
+				LEFT JOIN (
+				SELECT
+					activity_dir_id,
+					sum(res_score) AS score
+				FROM
+					(
+						SELECT DISTINCT
+							t.activity_dir_id,
+							d.res_score,
+							t.resource_id
+						FROM
+							t_study_record t
+						LEFT JOIN t_distribu_temp d ON t.activity_id = d.activity_id
+						AND t.resource_id = d.ref_id
+						WHERE
+							t.activity_id = #{activityId}
+						AND t.user_id = #{userId}
+					) a
+				GROUP BY
+					activity_dir_id
+			) tt ON a.id = tt.activity_dir_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="parentId != null and parentId != ''">
+				AND a.parent_id = #{parentId}
+			</if>
+		</where>
+		group by a.id
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date 
+			</otherwise>
+			
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ActivityDir" >
+		SELECT 
+			<include refid="activityDirColumns"/>
+		FROM t_activity_dir a
+		<include refid="activityDirJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_activity_dir(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			activity_id,
+			dir_name,
+			parent_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{activityId},
+			#{dirName},
+			#{parentId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_activity_dir SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			activity_id = #{activityId},
+			dir_name = #{dirName},
+			parent_id = #{parentId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_activity_dir
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_activity_dir SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ActivityDir" statementType="STATEMENT">
+		select * FROM t_activity_dir  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

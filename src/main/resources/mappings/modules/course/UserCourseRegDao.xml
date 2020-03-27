@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.UserCourseRegDao">
+    
+	<sql id="userCourseRegColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.course_id AS "courseId",
+		a.audit_state AS "auditState",
+		a.audit_time AS "auditTime",
+		a.audit_user AS "auditUser",
+		a.audit_advice AS "auditAdvice"
+	</sql>
+	
+	<sql id="userCourseRegJoins">
+	</sql>
+	<sql id="userCourseRegJoinsUserName">
+	LEFT JOIN sys_user b ON a.create_by=b.id
+	</sql>
+	
+    
+	<select id="get" resultType="UserCourseReg" >
+		SELECT 
+			<include refid="userCourseRegColumns"/>
+		FROM t_user_course_reg a
+		<include refid="userCourseRegJoins"/>
+		<where>
+			a.del_flag = 0
+				
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+		</where>
+	</select>
+	
+	 
+	<select id="getById" resultType="UserCourseReg" >
+		SELECT 
+			<include refid="userCourseRegColumns"/>
+		FROM t_user_course_reg a
+		<include refid="userCourseRegJoins"/>
+		<where>
+			a.del_flag = 0
+				AND a.id = #{id}
+		</where>
+	</select>
+	
+	<select id="findList" resultType="UserCourseReg" >
+		SELECT 
+			<include refid="userCourseRegColumns"/>
+			,b.name as "userName"
+		FROM t_user_course_reg a
+		<include refid="userCourseRegJoins"/>
+		<include refid="userCourseRegJoinsUserName"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="userName != null and userName != ''">
+				AND b.name = #{userName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UserCourseReg" >
+		SELECT 
+			<include refid="userCourseRegColumns"/>
+		FROM t_user_course_reg a
+		<include refid="userCourseRegJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_user_course_reg(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			course_id,
+			audit_state,
+			audit_time,
+			audit_user,
+			audit_advice
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{courseId},
+			#{auditState},
+			#{auditTime},
+			#{auditUser},
+			#{auditAdvice}
+		)
+	</insert>
+	<insert id="saveForSystem">
+		INSERT INTO t_user_course_reg(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			course_id,
+			audit_state,
+			audit_time,
+			audit_user,
+			audit_advice
+		) VALUES (
+			#{id},
+			#{bmUserId},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{courseId},
+			#{auditState},
+			#{auditTime},
+			#{auditUser},
+			#{auditAdvice}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_user_course_reg SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			course_id = #{courseId},
+			audit_state = #{auditState},
+			audit_time = #{auditTime},
+			audit_user = #{auditUser},
+			audit_advice = #{auditAdvice}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_user_course_reg
+		WHERE id = #{id}
+	</update>
+		<!--物理删除-->
+	<update id="deleteById">
+		DELETE FROM t_user_course_reg
+		WHERE id = #{id}
+	</update>
+		<!--物理删除-->
+	<update id="deleteByUserIdAndCourseId">
+		DELETE FROM t_user_course_reg
+		WHERE 
+		create_by = #{createBy.id} and
+		course_id = #{courseId}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_user_course_reg SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="UserCourseReg" statementType="STATEMENT">
+		select * FROM t_user_course_reg  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.dao.CarouselImgDao">
+    
+	<sql id="carouselImgColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.title AS "titl",
+		a.url AS "url",
+		a.img AS "img",
+		a.sort AS "sort"
+	</sql>
+	
+	<sql id="carouselImgJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="CarouselImg" >
+		SELECT 
+			<include refid="carouselImgColumns"/>
+		FROM t_carousel_img a
+		<include refid="carouselImgJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CarouselImg" >
+		SELECT 
+			<include refid="carouselImgColumns"/>
+		FROM t_carousel_img a
+		<include refid="carouselImgJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="remarks != null and remarks != ''">
+				AND a.remarks = #{remarks}
+			</if>
+			<if test="titl != null and titl != ''">
+				AND a.title = #{titl}
+			</if>
+			<if test="url != null and url != ''">
+				AND a.url = #{url}
+			</if>
+			<if test="img != null and img != ''">
+				AND a.img = #{img}
+			</if>
+			<if test="sort != null and sort != ''">
+				AND a.sort = #{sort}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort asc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CarouselImg" >
+		SELECT 
+			<include refid="carouselImgColumns"/>
+		FROM t_carousel_img a
+		<include refid="carouselImgJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_carousel_img(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			title,
+			url,
+			img,
+			sort
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{titl},
+			#{url},
+			#{img},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_carousel_img SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			title = #{titl},
+			url = #{url},
+			img = #{img},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_carousel_img
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_carousel_img SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="CarouselImg" statementType="STATEMENT">
+		select * FROM t_carousel_img  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 查询标题是否已经存在 -->
+	<select id="checkTitle" parameterType="map" resultType="map">
+		select * from t_carousel_img where title = #{title}
+	</select>
+</mapper>

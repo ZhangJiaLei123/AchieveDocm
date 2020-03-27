@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.dao.ApprovalRecordDao">
+    
+	<sql id="approvalRecordColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.status AS "status",
+		a.opinion AS "opinion"
+	</sql>
+	
+	<sql id="approvalRecordJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="ApprovalRecord" >
+		SELECT 
+			<include refid="approvalRecordColumns"/>
+		FROM t_approval_record a
+		<include refid="approvalRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="resourceId != null and resourceId != ''">
+				AND resource_id = #{resourceId}
+			</if>
+		</where>		
+	</select>
+		<select id="findByResourceId" resultType="ApprovalRecord" >
+		SELECT 
+			<include refid="approvalRecordColumns"/>
+		FROM t_approval_record a
+		<include refid="approvalRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="resourceId != null and resourceId != ''">
+				AND resource_id = #{resourceId}
+			</if>
+		</where>		
+	</select>
+	
+	<select id="findList" resultType="ApprovalRecord" >
+		SELECT 
+			<include refid="approvalRecordColumns"/>
+		FROM t_approval_record a
+		<include refid="approvalRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ApprovalRecord" >
+		SELECT 
+			<include refid="approvalRecordColumns"/>
+		FROM t_approval_record a
+		<include refid="approvalRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_approval_record(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			status,
+			opinion,
+			resource_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{status},
+			#{opinion},
+			#{resourceId}
+		)
+	</insert>
+	<insert id="insertNew">
+		INSERT INTO t_approval_record(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			status,
+			opinion,
+			resource_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{status},
+			#{opinion},
+			#{resourceId}
+		)
+	</insert>
+	<update id="update">
+		UPDATE t_approval_record SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			status = #{status},
+			opinion = #{opinion}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_approval_record
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_approval_record SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteApproByResId">
+		DELETE FROM t_approval_record
+		WHERE resource_id = #{resourceId}
+</update>
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ApprovalRecord" statementType="STATEMENT">
+		select * FROM t_approval_record  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

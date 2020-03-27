@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.resource.dao.MesanInfoDao">
+    
+	<sql id="mesanInfoColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		u.name AS "createBy.name",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.mesan_url AS "mesanUrl",
+		a.is_createadmin AS "isCreateAdmin",
+		a.mesan_type AS "mesanType",
+		tm.name as mesanTypeName,
+		a.mesan_code AS "mesanCode",
+		a.is_viewtop as "isViewTop",
+		a.swf_url as "swfUrl",
+		t.status AS "approvalStatus",
+		a.evaluate_score AS "evaluateScore",
+		c.count AS "count"
+	</sql>
+	
+	<sql id="mesanInfoJoins">
+		LEFT JOIN sys_user u on a.create_by = u.id
+		LEFT JOIN (select * from t_approval_record tt where tt.del_flag = 0) t on a.id = t.resource_id
+		LEFT JOIN (SELECT mesan_id,COUNT(1) AS count FROM t_mesan_evaluate b WHERE b.del_flag = 0 GROUP BY b.mesan_id) c ON c.mesan_id = a.id
+		LEFT JOIN t_mesan_dir tm on tm.id = a.mesan_type
+	</sql>
+	
+    <select id="getByFileName" resultType="MesanInfo" >
+		SELECT 
+			<include refid="mesanInfoColumns"/>
+		FROM t_mesan_info a
+		<include refid="mesanInfoJoins"/>
+		WHERE a.mesan_url LIKE 
+				<if test="dbName == 'oracle'">'%'||#{mesanUrl}</if>
+				<if test="dbName == 'mssql'">'%'+#{mesanUrl}</if>
+				<if test="dbName == 'mysql'">concat('%',#{mesanUrl})</if>
+	</select>
+    
+	<select id="get" resultType="MesanInfo" >
+		SELECT 
+			<include refid="mesanInfoColumns"/>
+		FROM t_mesan_info a
+		<include refid="mesanInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MesanInfo" >
+		SELECT 
+			<include refid="mesanInfoColumns"/>
+			,trd.downLoadStatus as downLoadStatus 
+		FROM t_mesan_info a
+		<include refid="mesanInfoJoins"/>
+			LEFT JOIN (SELECT status as downLoadStatus,resource_id from t_resource_download where user_id = #{userId}) trd on trd.resource_id = a.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="mesanType != null and mesanType != ''">
+				and a.mesan_type=#{mesanType}
+			</if>
+			<if test="mesanCode != null and mesanCode != ''">
+				and a.mesan_code=#{mesanCode}
+			</if>
+			<if test="approvalStatus != null and approvalStatus != ''">
+				AND t.status =#{approvalStatus} 
+			</if>
+			${sqlMap.dataScopeFileForOffice}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.is_viewtop desc, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	
+	<select id="findSelMesanInfoListPage" resultType="MesanInfo" >
+		SELECT
+			a.id AS "id",
+			a.create_by AS "createBy.id",
+			u. NAME AS "createBy.name",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			a. NAME AS "name",
+			a.mesan_url AS "mesanUrl",
+			a.is_createadmin AS "isCreateAdmin",
+			t. STATUS AS "approvalStatus"
+		FROM
+			t_mesan_info a
+		inner JOIN sys_user u ON a.create_by = u.id
+		inner JOIN t_approval_record t on a.id = t.resource_id and t.del_flag = 0
+		WHERE
+			t. STATUS = 0 and a.del_flag = 0
+		AND a.id NOT IN (
+			SELECT
+				tr.id
+			FROM
+				t_distribu_temp t
+			INNER JOIN t_mesan_info tr ON t.ref_id = tr.id
+			WHERE
+				t.del_flag = 0
+			AND t.activity_dir_id = #{activityDirId}
+			AND t.activity_id = #{activityId}
+		)
+		<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.is_viewtop desc, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	
+	<select id="findMyMesanInfoPage" resultType="MesanInfo" >
+		SELECT 
+			<include refid="mesanInfoColumns"/>
+		FROM t_mesan_info a
+		<include refid="mesanInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			and a.create_by = #{currentUser.id}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.is_viewtop desc, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findAllList" resultType="MesanInfo" >
+		SELECT 
+			<include refid="mesanInfoColumns"/>
+			,trd.downLoadStatus as downLoadStatus 
+		FROM t_mesan_info a
+		<include refid="mesanInfoJoins"/>
+		 LEFT JOIN (SELECT status as downLoadStatus,resource_id from t_resource_download where user_id = #{userId}) trd on trd.resource_id = a.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_mesan_info(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			is_createadmin,
+			mesan_url,
+			swf_url,
+			mesan_type,
+			mesan_code
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{isCreateAdmin},
+			#{mesanUrl},
+			#{swfUrl},
+			#{mesanType},
+			#{mesanCode}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_mesan_info SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			del_flag = #{delFlag},
+			mesan_url = #{mesanUrl},
+			mesan_type = #{mesanType},
+			mesan_code = #{mesanCode},
+			swf_url = #{swfUrl},
+			evaluate_score = #{evaluateScore}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_mesan_info
+		WHERE id = #{id}
+	</update>
+	<!--置顶或取消置顶-->
+	<update id="setViewTop">
+		update t_mesan_info
+		set is_viewtop = #{isViewTop},
+		update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_mesan_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<select id="findChanYuQingKuangUser" resultType="User" >
+	select su.`name` ,so.name as officeName from (
+	(
+		SELECT
+			DISTINCT
+			tc.user_id
+		FROM
+			t_lessson_time t
+		left JOIN t_lessson_dir td ON t.id = td.lesson_time_id and t.id = #{lessionTimeId}
+		left join t_activity_dir ta on ta.id  = td.activity_dir_id
+		left join t_distribu_temp tt on tt.activity_dir_id = ta.id
+		left join t_study_record tc on tt.ref_id = tc.resource_id
+	)UNION ALL(
+		select user_id  from t_lession_importuser  where active_id = #{userActivityId}
+
+	)
+		)tu inner join sys_user su on tu.user_id = su.id
+		left join sys_office so on su.office_id = so.id 
+	</select>
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="MesanInfo" statementType="STATEMENT">
+		select * FROM t_mesan_info  where ${propertyName} = '${value}'
+	</select>
+	<!-- 资料统计 -->
+	<select id="statisMesanList" resultType="MesanInfo" >
+	SELECT
+	t.id,
+	t.`name`,
+	t.mesan_type AS "mesanType",
+	t.mesan_code as mesanCode,
+	t.evaluate_score AS evaluateScore,
+	tmd.name as mesanTypeName,
+	count(tm.id) AS count,
+	count(tr.id) AS downLoadCount,
+	tur.browseTime AS browseTime,
+	tur.browseCount
+FROM
+	t_mesan_info t
+LEFT JOIN t_mesan_evaluate tm ON t.id = tm.mesan_id
+LEFT JOIN t_mesan_mark ta ON t.id = ta.mesan_id
+LEFT JOIN t_downlond_record tr ON t.id = tr.mseaninfo_id
+LEFT JOIN t_mesan_dir tmd on tmd.id = t.mesan_type
+LEFT JOIN (
+	SELECT
+		tur.mesan_id,
+		count(tur.id) as browseCount,
+		sum(
+			UNIX_TIMESTAMP(
+				str_to_date(tur.end_time, '%Y-%m-%d %T')
+			) - UNIX_TIMESTAMP(
+				str_to_date(
+					tur.start_time,
+					'%Y-%m-%d %T'
+				)
+			)
+		)  AS browseTime
+	FROM
+		t_user_study_record_material tur
+	GROUP BY
+		tur.mesan_id
+) tur ON t.id = tur.mesan_id
+		<where>
+			
+			t.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND t.name LIKE 
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		group by t.id,t.name,t.mesan_type
+				
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY t.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="mesanStudyTime" resultType="MesanInfo" >
+
+		SELECT
+			t.id,
+			t.name as name,
+			tur.browseTime
+		FROM
+			t_mesan_info t
+		LEFT JOIN  (
+	SELECT
+		tur.mesan_id,
+		sum(
+			UNIX_TIMESTAMP(
+				str_to_date(tur.end_time, '%Y-%m-%d %T')
+			) - UNIX_TIMESTAMP(
+				str_to_date(
+					tur.start_time,
+					'%Y-%m-%d %T'
+				)
+			)
+		)  AS browseTime
+	FROM
+			t_user_study_record_material tur where tur.user_id =  #{userId}
+		GROUP BY
+			tur.mesan_id 
+	) tur  on t.id = tur.mesan_id
+		<where>
+			<if test="name != null and name != ''">
+				AND t.name LIKE 
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY browseTime DESC
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

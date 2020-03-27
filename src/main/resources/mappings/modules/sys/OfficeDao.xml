@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.dao.OfficeDao">
+
+	<sql id="officeColumns">
+		a.id,
+		a.parent_id AS "parent.id",
+		p.name as parentName,
+		a.parent_ids,
+		a.area_id AS "area.id",
+		a.xs_code as xsCode,
+		a.legal_person as legalPerson,
+		a.contacts as contacts,
+		a.area_code as areaCode,
+		a.brand as brand,
+		a.phone24,
+		a.fed_level as fedLevel,
+		a.code,
+		a.name,
+		a.sort,
+		a.type,
+		a.grade,
+		a.address, 
+		a.zip_code, 
+		a.master, 
+		a.phone, 
+		a.fax, 
+		a.email, 
+		a.remarks,
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag,
+		a.del_flag as isDel,
+		a.useable AS useable,
+		a.primary_person AS "primaryPerson.id",
+		a.deputy_person AS "deputyPerson.id",
+		p.name AS "officeTypeName",
+		a.office_type AS "officeType",
+		pp.name AS "primaryPerson.name",
+		dp.name AS "deputyPerson.name",
+		td.name AS "distrctName",
+		tp.proincename AS "provinceName",
+		tc.cityname AS "cityName",
+		a.distrct_id AS "distrctId",
+		a.province_id AS "provinceId",
+		a.city_id AS "cityId"
+	</sql>
+	
+	<sql id="officeJoins">
+		LEFT JOIN sys_office_type p ON p.id = a.office_type
+		LEFT JOIN sys_user pp ON pp.id = a.primary_person
+		LEFT JOIN sys_user dp ON dp.id = a.deputy_person
+		LEFT JOIN t_district td on a.distrct_id = td.id
+		LEFT JOIN t_province tp on a.province_id = tp.provinceid
+		LEFT JOIN t_city tc on a.city_id = tc.cityid
+    </sql>
+	
+	<select id="get" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		where  a.id = #{id}
+	</select>
+	
+	<select id="getByCode" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		
+		WHERE a.code = #{code}
+	</select>
+	<select id="findList" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+			<!-- 数据范围过滤 -->
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="officeType != null and officeType != ''">
+				AND a.office_type = #{officeType}
+			</if>
+			<if test="grade != null and grade != ''">
+				AND a.grade = #{grade}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name like concat ('%',#{name},'%')
+			</if>
+			<if test="areaId != null and areaId != ''">
+				AND(ar.id = #{areaId} or  par.id = #{areaId} or ppar.id = #{areaId})
+			</if>
+			<if test="distrctId != null and distrctId != ''">
+				AND a.distrct_id = #{distrctId}
+			</if>
+			<if test="provinceId != null and provinceId != ''">
+					AND a.province_id = #{provinceId}
+			</if>
+			<if test="cityId != null and cityId != ''">
+					AND a.city_id = #{cityId}
+			</if>
+		<!-- 数据范围过滤 -->
+			${sqlMap.dataScopeFileForUserOfficeId}
+		ORDER BY a.update_date DESC
+	</select>
+			
+	<select id="findAllList" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.code
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.code
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_office(
+			id, 
+			parent_id, 
+			parent_ids, 
+			code, 
+			name, 
+			sort, 
+			type, 
+			grade, 
+			address, 
+			zip_code, 
+			master, 
+			phone, 
+			fax, 
+			email, 
+			create_by, 
+			create_date, 
+			update_by, 
+			update_date, 
+			remarks, 
+			del_flag,
+			useable,
+			primary_person,
+			deputy_person,
+			fed_level,
+			xs_code,
+			legal_person ,
+			contacts,
+			area_code,
+			brand ,
+			phone24,
+			office_type,
+			distrct_id,
+			province_id,
+			city_id
+		) VALUES (
+			#{id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{code}, 
+			#{name}, 
+			#{sort}, 
+			#{type}, 
+			#{grade}, 
+			#{address}, 
+			#{zipCode}, 
+			#{master}, 
+			#{phone}, 
+			#{fax}, 
+			#{email}, 
+			#{createBy.id}, 
+			#{createDate}, 
+			#{updateBy.id}, 
+			#{updateDate}, 
+			#{remarks}, 
+			#{delFlag},
+			#{useable},
+			#{primaryPerson.id},
+			#{deputyPerson.id},
+			#{fedLevel},
+			#{xsCode},
+			#{legalPerson},
+			#{contacts},
+			#{areaCode},
+			#{brand},
+			#{phone24},
+			#{officeType},
+			#{distrctId},
+			#{provinceId},
+			#{cityId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_office SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			code = #{code}, 
+			name = #{name}, 
+			type = #{type}, 
+			grade = #{grade}, 
+			address = #{address}, 
+			zip_code = #{zipCode}, 
+			master = #{master}, 
+			phone = #{phone}, 
+			fax = #{fax}, 
+			email = #{email}, 
+			update_by = #{updateBy.id}, 
+			update_date = #{updateDate}, 
+			remarks = #{remarks},
+			useable=#{useable},
+			primary_person=#{primaryPerson.id},
+			deputy_person=#{deputyPerson.id},
+			fed_level=#{fedLevel},
+			xs_code=#{xsCode},
+			legal_person=#{legalPerson},
+			contacts=#{contacts},
+			area_code=#{areaCode},
+			brand=#{brand},
+			phone24=#{phone24},
+			office_type=#{officeType},
+			distrct_id = #{distrctId},
+			province_id =#{provinceId},
+			city_id=#{cityId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE sys_office SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM sys_office 
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+	<update id="deleteByLogic">
+		UPDATE sys_office SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+	<select id="selDictList"  resultType="Map">
+		SELECT
+			value,
+			label
+		FROM
+			sys_dict t
+		WHERE
+			type = #{dicType}
+		AND t.del_flag = 0
+		ORDER BY
+			t.sort ASC
+	</select>
+	<!-- 查询组织下是否有用户 -->
+	<select id="findUserCountByOfficeId"  resultType="Integer">
+		SELECT
+			count(1)
+		FROM
+			sys_user o
+		WHERE
+			o.office_id =#{officeId}
+		AND o.del_flag = 0
+	</select>
+	<!-- 查询大于1000的数据的情况 -->
+	<select id="findListForOverOneThousand" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		and not EXISTS (select st.search_cond from t_search_temp st where st.search_cond = a.id and type=1)
+		<if test="officeType != null and officeType != ''">
+				AND a.office_type = #{officeType}
+			</if>
+			<if test="grade != null and grade != ''">
+				AND a.grade = #{grade}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="areaId != null and areaId != ''">
+				AND(ar.id = #{areaId} or  par.id = #{areaId} or ppar.id = #{areaId})
+			</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		OR a.id = #{currentUser.office.id}
+		ORDER BY a.code
+	</select>
+	<!-- 选学查询 -->
+	<select id="findOfficeListForXx" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		WHERE a.del_flag = 0
+	    and not EXISTS (select 1 from t_office_activity oa where oa.office_id = a.id and oa.type =1 and oa.activity_id = #{activityId})
+		<if test="officeType != null and officeType != ''">
+				AND a.office_type = #{officeType}
+			</if>
+			<if test="grade != null and grade != ''">
+				AND a.grade = #{grade}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="areaId != null and areaId != ''">
+				AND(ar.id = #{areaId} or  par.id = #{areaId} or ppar.id = #{areaId})
+			</if>
+			<if test="currentUser != null and currentUser != '' and currentUser.office != null">
+				OR a.id = #{currentUser.office.id}
+			</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		
+		ORDER BY a.code
+	</select>
+	
+	<select id="showshCourseOfficeCourseList" resultType="Office">
+		SELECT
+			<include refid="officeColumns"/>
+		FROM sys_office a
+		<include refid="officeJoins"/>
+		inner join t_office_course toc on a.id = toc.office_id and toc.course_id = #{courseId} and toc.type=#{userCourseType}
+			<!-- 数据范围过滤 -->
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="officeType != null and officeType != ''">
+				AND a.office_type = #{officeType}
+			</if>
+			<if test="grade != null and grade != ''">
+				AND a.grade = #{grade}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name like concat ('%',#{name},'%')
+			</if>
+			<if test="distrctId != null and distrctId != ''">
+				AND a.distrct_id = #{distrctId}
+			</if>
+			<if test="provinceId != null and provinceId != ''">
+					AND a.province_id = #{provinceId}
+			</if>
+			<if test="cityId != null and cityId != ''">
+					AND a.city_id = #{cityId}
+			</if>
+		<!-- 数据范围过滤 -->
+			${sqlMap.dataScopeFileForUserOfficeId}
+		ORDER BY a.code
+	</select>
+	
+</mapper>

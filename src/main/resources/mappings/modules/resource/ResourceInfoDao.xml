@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.resource.dao.ResourceInfoDao">
+    
+	<sql id="resourceInfoColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		u.name AS "updateBy.name",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.resource_type AS "resourceType",
+		a.resource_dir AS "resourceDir",
+		d.name AS "resourceDirName",
+		a.resource_url AS "resourceUrl",
+		a.is_release AS "isRelease",
+		a.is_public AS "isPublic",
+		a.resource_code as "resourceCode",
+		a.is_createadmin as "isCreateAdmin",
+		r.status as "resourceStatus",
+		a.resource_swf_url as "resourceSwfUrl",
+		a.is_submit as "isSubmit"
+	</sql>
+	
+	<sql id="resourceInfoJoins">
+		LEFT JOIN sys_user u on a.create_by = u.id
+		LEFT JOIN t_resource_dir d on a.resource_dir = d.id
+		LEFT JOIN t_approval_record r on a.id = r.resource_id and  r.del_flag = 0
+	</sql>
+	
+    
+	<select id="get" resultType="ResourceInfo" >
+		SELECT 
+			<include refid="resourceInfoColumns"/>
+		FROM t_resource_info a
+		<include refid="resourceInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ResourceInfo" >
+		SELECT 
+			<include refid="resourceInfoColumns"/>
+		FROM t_resource_info a
+		<include refid="resourceInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="resourceType != null and resourceType != ''">
+				AND a.resource_type = #{resourceType}
+			</if>
+			<if test="resourceDir != null and resourceDir != ''">
+				AND a.resource_dir = #{resourceDir}
+			</if>
+			<if test="isSubmit != null and isSubmit != ''">
+				AND a.is_submit = #{isSubmit}
+			</if>
+			<if test="isPublic != null and isPublic != ''">
+				AND a.is_public = #{isPublic}
+			</if>
+			<if test="resourceCode != null and resourceCode != ''">
+				AND a.resource_code = #{resourceCode}
+			</if>
+			<if test="resourceStatus != null and resourceStatus != ''">
+				AND r.status = #{resourceStatus}
+			</if>
+			${sqlMap.dataScopeFileForOffice}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findSelResourceInfoPage" resultType="ResourceInfo" >
+		select a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		u.name AS "updateBy.name",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.resource_type AS "resourceType",
+		a.resource_dir AS "resourceDir",
+		d.name AS "resourceDirName",
+		a.resource_url AS "resourceUrl",
+		a.is_release AS "isRelease",
+		a.is_createadmin as "isCreateAdmin",
+		a.is_public AS "isPublic",
+		a.resource_code as "resourceCode",
+		r.status as "resourceStatus",
+		a.resource_swf_url as "resourceSwfUrl",
+		a.is_submit as "isSubmit"
+	FROM t_resource_info a
+	LEFT JOIN sys_user u on a.create_by = u.id
+			LEFT JOIN t_resource_dir d on a.resource_dir = d.id
+			LEFT JOIN t_approval_record r on a.id = r.resource_id and  r.del_flag = 0
+	where a.del_flag = 0 and r.status =0 
+	AND a.id NOT IN (
+				SELECT
+					tr.id
+				FROM
+					t_distribu_temp t
+				INNER JOIN t_resource_info tr ON t.ref_id = tr.id
+				WHERE
+					t.del_flag = 0
+				AND t.activity_dir_id = #{activityDirId}
+				AND t.activity_id = #{activityId}
+			)
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		<if test="resourceType != null and resourceType != ''">
+				AND a.resource_type = #{resourceType}
+			</if>
+			<if test="resourceDir != null and resourceDir != ''">
+				AND a.resource_dir = #{resourceDir}
+			</if>
+			<if test="isSubmit != null and isSubmit != ''">
+				AND a.is_submit = #{isSubmit}
+			</if>
+		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findMyResourcePage" resultType="ResourceInfo" >
+		SELECT 
+			<include refid="resourceInfoColumns"/>
+		FROM t_resource_info a
+		<include refid="resourceInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="resourceType != null and resourceType != ''">
+				AND a.resource_type = #{resourceType}
+			</if>
+			<if test="resourceDir != null and resourceDir != ''">
+				AND a.resource_dir = #{resourceDir}
+			</if>
+			<if test="isSubmit != null and isSubmit != ''">
+				AND a.is_submit = #{isSubmit}
+			</if>
+			and a.create_by = #{currentUser.id}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findAllList" resultType="ResourceInfo" >
+		SELECT 
+			<include refid="resourceInfoColumns"/>
+		FROM t_resource_info a
+		<include refid="resourceInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_resource_info(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			resource_type,
+			resource_dir,
+			resource_url,
+			is_release,
+			is_public,
+			resource_code,
+			resource_swf_url,
+			is_createadmin
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{resourceType},
+			#{resourceDir},
+			#{resourceUrl},
+			#{isRelease},
+			#{isPublic},
+			#{resourceCode},
+			#{resourceSwfUrl},
+			#{isCreateAdmin}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_resource_info SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			resource_type = #{resourceType},
+			resource_dir = #{resourceDir},
+			resource_url = #{resourceUrl},
+			is_release = #{isRelease},
+			is_public = #{isPublic},
+			resource_code = #{resourceCode},
+			resource_swf_url = #{resourceSwfUrl},
+			is_submit = #{isSubmit}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_resource_info
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_resource_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<!--发布或取消发布-->
+	<update id="isPublic">
+		UPDATE t_resource_info SET 
+			is_public = #{isPublic}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ResourceInfo" statementType="STATEMENT">
+		select * FROM t_resource_info  where ${propertyName} = '${value}'
+	</select>
+	<!-- 选择审核通过资源 -->
+	<select id="findResourceInfoIsShSuccess" resultType="ResourceInfo" >
+		SELECT 
+			<include refid="resourceInfoColumns"/>
+		FROM t_resource_info a
+		<include refid="resourceInfoJoins"/>
+		<if  test="loginUserId != null and loginUserId != ''">
+			LEFT JOIN sys_user_office uo ON uo.office_id = u.office_id AND uo.user_id =#{loginUserId}
+		</if>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and r.status ='0'
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="resourceType != null and resourceType != ''">
+				AND a.resource_type = #{resourceType}
+			</if>
+			<if test="isPublic != null and isPublic != ''">
+				AND a.is_public = #{isPublic}
+			</if>
+			<if test="resourceDir != null and resourceDir != ''">
+				AND a.resource_dir = #{resourceDir}
+			</if>
+			<if test="isSubmit != null and isSubmit != ''">
+				AND a.is_submit = #{isSubmit}
+			</if>
+			<if  test="loginUserId != null and loginUserId != ''">
+				AND(uo.user_id = #{loginUserId} OR a.create_by = #{loginUserId})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

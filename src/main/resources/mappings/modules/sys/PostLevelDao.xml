@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.dao.PostLevelDao">
+    
+	<sql id="postLevelColumns">
+		a.id AS "id",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.postinfo_id AS "postinfoId",
+		a.sort as "sort"
+	</sql>
+	
+	<sql id="postLevelJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="PostLevel" >
+		SELECT 
+			<include refid="postLevelColumns"/>
+		FROM t_post_level a
+		<include refid="postLevelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PostLevel" >
+		SELECT 
+			<include refid="postLevelColumns"/>
+		FROM t_post_level a
+		<include refid="postLevelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="postinfoId != null and postinfoId != ''">
+				AND a.postinfo_id = #{postinfoId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY sort asc, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findUserListByPostLevelId" resultType="Integer" >
+	SELECT
+		count(1)
+	FROM
+		sys_user u
+	INNER JOIN sys_user_post p ON u.id = p.user_id
+	INNER JOIN t_post_level t ON p.post_level = t.id
+	WHERE
+		u.del_flag = 0
+	AND t.id =#{id}
+	</select>
+	
+	<select id="findAllList" resultType="PostLevel" >
+		SELECT 
+			<include refid="postLevelColumns"/>
+		FROM t_post_level a
+		<include refid="postLevelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_post_level(
+			id,
+			create_date,
+			create_by,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			postinfo_id,
+			sort
+		) VALUES (
+			#{id},
+			#{createDate},
+			#{createBy.id},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{postinfoId},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_post_level SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			postinfo_id = #{postinfoId},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_post_level
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_post_level SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="PostLevel" statementType="STATEMENT">
+		select * FROM t_post_level  where ${propertyName} = '${value}'
+	</select>
+	<!-- 判断名字是否存在 -->
+	<select id="findNameExists" resultType="int" parameterType="string" >
+		select count(*) FROM t_post_level  where name = #{name} and del_flag = #{DEL_FLAG_DELETE}
+	</select>
+	<select id="selectedPostLevelList" resultType="PostLevel" parameterType="map" >
+		select *  FROM t_post_level  where postinfo_id = #{postInfoId} and del_flag = 0 order by sort asc,name 
+	</select>
+	<delete id="deletePostLevelByPostInfoId" parameterType="string">
+		delete from t_post_level where postinfo_id = #{postInfoId} 
+	</delete>
+</mapper>

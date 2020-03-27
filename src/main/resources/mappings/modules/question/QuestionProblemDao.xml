@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.question.dao.QuestionProblemDao">
+    
+	<sql id="questionProblemColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.question_id AS "questionId",
+		a.pro_model AS "proModel",
+		a.pro_sterm AS "proSterm",
+		a.pro_answer AS "proAnswer",
+		a.pro_que_one AS "proQueOne",
+		a.pro_que_two AS "proQueTwo",
+		a.pro_que_three AS "proQueThree",
+		a.pro_que_four AS "proQueFour",
+		a.pro_sort AS "proSort"
+	</sql>
+	
+	<sql id="questionProblemJoins">
+	</sql>
+	
+	<sql id="questionProblemJoinsUserAnswer">
+	LEFT JOIN (select * from t_question_result c where c.release_id=#{releaseId} 
+	and c.create_by= #{userId}) b ON a.id = b.problem_id
+	</sql>
+	
+    
+	<select id="get" resultType="QuestionProblem" >
+		SELECT 
+			<include refid="questionProblemColumns"/>
+		FROM t_question_problem a
+		<include refid="questionProblemJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="QuestionProblem" >
+		SELECT 
+			<include refid="questionProblemColumns"/>
+		FROM t_question_problem a
+		<include refid="questionProblemJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="questionId != null and questionId != ''">
+				AND a.question_id = #{questionId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.pro_sort
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="QuestionProblem" >
+		SELECT 
+			<include refid="questionProblemColumns"/>
+		FROM t_question_problem a
+		<include refid="questionProblemJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_question_problem(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			question_id,
+			pro_model,
+			pro_sterm,
+			pro_answer,
+			pro_que_one,
+			pro_que_two,
+			pro_que_three,
+			pro_que_four,
+			pro_sort
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{questionId},
+			#{proModel},
+			#{proSterm},
+			#{proAnswer},
+			#{proQueOne},
+			#{proQueTwo},
+			#{proQueThree},
+			#{proQueFour},
+			#{proSort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_question_problem SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			question_id = #{questionId},
+			pro_model = #{proModel},
+			pro_sterm = #{proSterm},
+			pro_answer = #{proAnswer},
+			pro_que_one = #{proQueOne},
+			pro_que_two = #{proQueTwo},
+			pro_que_three = #{proQueThree},
+			pro_que_four = #{proQueFour},
+			pro_sort = #{proSort}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_question_problem
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_question_problem SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="QuestionProblem" statementType="STATEMENT">
+		select * FROM t_question_problem  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 获取用户和答题信息 -->
+	<select id="findPageByQuestionIdAndUid" resultType="QuestionProblem" >
+		SELECT 
+			<include refid="questionProblemColumns"/>
+			,b.res_answer as answer
+		FROM t_question_problem a
+		<include refid="questionProblemJoins"/>
+		<include refid="questionProblemJoinsUserAnswer"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.question_id = #{questionId}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 找到最大的编号 -->
+	<select id="getMaxSortByQuestionId" resultType="String">
+	SELECT MAX(pro_sort) from t_question_problem a
+		<where>
+		a.question_id = #{questionId}
+		AND a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+	</select>
+	
+	<!-- 根据questionId、prosort寻找未删除的  -->
+	<select id="getByQuestionIdAndSort" resultType="QuestionProblem" >
+		SELECT 
+			<include refid="questionProblemColumns"/>
+		FROM t_question_problem a
+		<include refid="questionProblemJoins"/>
+		WHERE 
+		a.question_id = #{questionId} AND
+		a.pro_sort = #{proSort}
+		AND a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>
+</mapper>

@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.UserActivityDao">
+    
+	<sql id="userActivityColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_id AS "userId",
+		a.activity_id AS "activityId",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="userActivityJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="UserActivity" >
+		SELECT 
+			<include refid="userActivityColumns"/>
+		FROM t_user_activity a
+		<include refid="userActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultType="UserActivity" >
+		SELECT 
+			<include refid="userActivityColumns"/>
+		FROM t_user_activity a
+		<include refid="userActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UserActivity" >
+		SELECT 
+			<include refid="userActivityColumns"/>
+		FROM t_user_activity a
+		<include refid="userActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_user_activity(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			activity_id,
+			type
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userId},
+			#{activityId},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_user_activity SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			user_id = #{userId},
+			activity_id = #{activityId},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_user_activity
+		WHERE id = #{id}
+	</update>
+		<!--物理删除-->
+	<update id="deleteUserActivityById">
+		DELETE FROM t_user_activity
+		WHERE id = #{id}
+	</update>
+	
+		<!--删除人员活动关系-->
+	<update id="deleteUserActivityByActivId">
+		DELETE FROM t_user_activity
+		WHERE activity_id = #{activId}
+		<if test="type !=null and type != ''">
+			and type = #{type}
+		</if>
+		<if test="userId !=null and userId != ''">
+			and user_id = #{userId}
+		</if>
+	</update>
+	
+	
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_user_activity SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="UserActivity" statementType="STATEMENT">
+		select * FROM t_user_activity  where ${propertyName} = '${value}'
+	</select>
+	<insert id="saveBatch">
+		INSERT INTO t_user_activity(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			activity_id,
+			type
+		) VALUES
+	    <foreach collection ="list" item="ua" index= "index" separator =",">
+		 (
+			#{ua.id},
+			#{ua.createBy.id},
+			#{ua.createDate},
+			#{ua.updateBy.id},
+			#{ua.updateDate},
+			#{ua.remarks},
+			#{ua.delFlag},
+			#{ua.userId},
+			#{ua.activityId},
+			#{ua.type}
+		)
+		</foreach>
+	</insert>
+	
+	<select id="getIsBtExists" resultType="UserActivity" parameterType="UserActivity" >
+		SELECT 
+			<include refid="userActivityColumns"/>
+		FROM t_user_activity a
+		<include refid="userActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="type !=null and type != ''">
+				and type = #{type}
+			</if>
+		</where>
+	</select>
+	
+		<!--删除人员活动关系-->
+	<update id="deleteActiveUser"   parameterType="LessionImportUser" >
+		select * from t_lession_importuser where user_id = #{userId} and active_id = #{activeId}
+	</update>
+	
+	<insert id="saveActiveUser" parameterType="LessionImportUser" >
+		INSERT INTO t_lession_importuser(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			active_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userId},
+			#{activeId}
+		)
+	</insert>
+	<!-- 
+	<select id="findListByEndTime" resultType="UserActivity" >
+		SELECT 
+			<include refid="userActivityColumns"/>
+		FROM t_user_activity a
+		<include refid="userActivityJoins"/>
+		LEFT JOIN t_study_activity b 
+        ON a.activity_id = b.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY b.study_end_time DESC
+			</otherwise>
+		</choose>
+	</select> -->
+	
+	<select id="findListByEndTime" resultType="UserActivity" >
+	SELECT * FROM(
+		SELECT 
+			<include refid="userActivityColumns"/>
+		FROM t_user_activity a
+		<include refid="userActivityJoins"/>
+		LEFT JOIN t_study_activity b 
+        ON a.activity_id = b.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND b.name like
+				<if test="dbName == 'oracle'">'%'||#{searchContent}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{searchContent}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{searchContent},'%')</if>
+			</if>
+			AND b.study_end_time &gt; DATE_SUB(CURDATE(),INTERVAL 1 DAY)
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY b.study_start_time DESC, b.create_date DESC
+			</otherwise>
+		</choose>
+	   )aaaaaa  UNION ALL
+	   <!-- 不能的状态 -->
+	   SELECT * FROM(
+		SELECT 
+			<include refid="userActivityColumns"/>
+		FROM t_user_activity a
+		<include refid="userActivityJoins"/>
+		LEFT JOIN t_study_activity b 
+        ON a.activity_id = b.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND b.name like
+				<if test="dbName == 'oracle'">'%'||#{searchContent}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{searchContent}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{searchContent},'%')</if>
+			</if>
+			AND b.study_end_time &lt;= DATE_SUB(CURDATE(),INTERVAL 1 DAY)
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY b.study_start_time DESC, b.create_date DESC
+			</otherwise>
+		</choose>
+	   )  bbbbbb
+	   
+	</select>
+	
+		<!--物理删除-->
+	<update id="deleteUserActivityByUserIdAndActivityId">
+		DELETE FROM t_user_activity
+		WHERE user_id = #{userId} AND
+		activity_id = #{activityId}
+	</update>
+</mapper>

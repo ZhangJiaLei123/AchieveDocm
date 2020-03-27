@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.dao.PostInfoDao">
+    
+	<sql id="postInfoColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.post_type AS "postType"
+	</sql>
+	
+	<sql id="postInfoJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="PostInfo" >
+		SELECT 
+			<include refid="postInfoColumns"/>
+		FROM t_post_info a
+		<include refid="postInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PostInfo" >
+		SELECT 
+			<include refid="postInfoColumns"/>
+			,
+		count(p.id) as countPostLevel
+		FROM t_post_info a
+		left join t_post_level p on a.id = p.postinfo_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="postType != null and postType != ''">
+				AND a.post_type = #{postType}
+			</if>
+				group by a.id ,
+				a.create_by ,
+				a.create_date ,
+				a.update_by ,
+				a.update_date ,
+				a.remarks  ,
+				a.del_flag ,
+				a.name ,
+				a.post_type 
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PostInfo" >
+		SELECT 
+			<include refid="postInfoColumns"/>
+		FROM t_post_info a
+		<include refid="postInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+		
+	<select id="findPostList" resultType="PostInfo" >
+		SELECT t.`name` AS NAME,
+			s. NAME AS "postinfoTypeName",t.id AS id
+			,num AS countPostLevel
+		FROM t_post_info t
+		LEFT JOIN t_post_type s ON s.id = t.post_type
+		LEFT JOIN (select postinfo_id,count(*)  as num from t_post_level
+			where del_flag = 0
+		group by postinfo_id) l ON t.id = l.postinfo_id
+		<where>
+			t.del_flag = 0
+			<if test="name != null and name != ''">
+				AND t.name = #{name}
+			</if>
+			<if test="postType != null and postType != ''">
+				AND t.post_type = #{postType}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			
+			<otherwise>
+				ORDER BY t.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findPostListForSearch" resultType="PostInfo" >
+		SELECT t.`name` AS NAME,s.id as postType,
+			s. NAME AS "postinfoTypeName",t.id AS id
+			,l.`name` as postLevelName,l.id as positLevelId
+		FROM t_post_info t
+		LEFT JOIN t_post_type s ON s.id = t.post_type
+		LEFT JOIN t_post_level l on l.postinfo_id = t.id
+		<where>
+			 t.del_flag = 0 and s.del_flag = 0 and l.del_flag = 0
+			<if test="name != null and name != ''">
+				AND t.name like concat('%',#{name},'%')
+			</if>
+			<if test="postType != null and postType != ''">
+				AND t.post_type = #{postType}
+			</if>
+			<if test="positLevelId != null and positLevelId != ''">
+				AND l.id = #{positLevelId}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			
+			<otherwise>
+				ORDER BY t.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert">
+		INSERT INTO t_post_info(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			post_type
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{postType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_post_info SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			post_type = #{postType}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_post_info
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_post_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="PostInfo" statementType="STATEMENT">
+		select * FROM t_post_info  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findPostListByType" resultType="Map" >
+		select id,name from t_post_info where post_type =#{postType} and del_flag =0 order by update_date asc
+	</select>
+	
+	<select id="findPostLevelByPost" resultType="Map" >
+		select id,name from t_post_level where postinfo_id = #{postId} and del_flag =0 order by update_date asc
+
+	</select>
+</mapper>

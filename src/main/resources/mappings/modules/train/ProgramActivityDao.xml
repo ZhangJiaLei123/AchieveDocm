@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.ProgramActivityDao">
+    
+	<sql id="programActivityColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.space AS "space",
+		a.user_count AS "userCount",
+		a.pro_time AS "proTime",
+		a.train_program_id AS "trainProgramId",
+		count(t.id) as "countGzUser"
+	</sql>
+	
+	<sql id="programActivityJoins">
+		left join (select * from t_program_focus ttt where ttt.del_flag = '0' ) t on a.id = t.program_activity_id 
+	</sql>
+	
+    
+	<select id="get" resultType="ProgramActivity" >
+		SELECT 
+			<include refid="programActivityColumns"/>
+		FROM t_program_activity a
+		<include refid="programActivityJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProgramActivity" >
+		SELECT 
+			<include refid="programActivityColumns"/>
+		FROM t_program_activity a
+		<include refid="programActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="space != null and space != ''">
+				AND a.space = #{space}
+			</if>
+			<if test="userCount != null and userCount != ''">
+				AND a.user_count = #{userCount}
+			</if>
+			<if test="proTime != null and proTime != ''">
+				AND a.pro_time = #{proTime}
+			</if>
+			<if test="trainProgramId != null and trainProgramId != ''">
+				AND a.train_program_id = #{trainProgramId}
+			</if>
+		</where>
+		group by a.id 
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findGzList" resultType="ProgramActivity" >
+		SELECT 
+			<include refid="programActivityColumns"/>
+			,
+			d.id as userFllow
+		FROM t_program_activity a
+		<include refid="programActivityJoins"/>
+		left join t_program_focus d on a.id = d.program_activity_id and d.user_id = #{userFllow}
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="space != null and space != ''">
+				AND a.space = #{space}
+			</if>
+			<if test="userCount != null and userCount != ''">
+				AND a.user_count = #{userCount}
+			</if>
+			<if test="proTime != null and proTime != ''">
+				AND a.pro_time = #{proTime}
+			</if>
+			<if test="trainProgramId != null and trainProgramId != ''">
+				AND a.train_program_id = #{trainProgramId}
+			</if>
+		</where>
+		group by a.id 
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProgramActivity" >
+		SELECT 
+			<include refid="programActivityColumns"/>
+		FROM t_program_activity a
+		<include refid="programActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_program_activity(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			space,
+			user_count,
+			pro_time,
+			train_program_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{space},
+			#{userCount},
+			#{proTime},
+			#{trainProgramId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_program_activity SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			space = #{space},
+			user_count = #{userCount},
+			pro_time = #{proTime},
+			train_program_id = #{trainProgramId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_program_activity
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteTrainProm">
+		DELETE FROM t_program_activity
+		WHERE train_program_id = #{trainProgramId}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_program_activity SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProgramActivity" statementType="STATEMENT">
+		select * FROM t_program_activity  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

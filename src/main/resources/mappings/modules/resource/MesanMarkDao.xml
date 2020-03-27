@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.resource.dao.MesanMarkDao">
+    
+	
+	<insert id="insert">
+		INSERT INTO t_mesan_mark(
+			id,
+			score,
+			mesan_id,
+			user_id,
+			create_date,
+			update_date
+		) VALUES (
+			#{id},
+			#{score},
+			#{mesanId},
+			#{userId},
+			#{createDate},
+			#{updateDate}
+		)
+	</insert>
+	
+	<select id="getAvgMarkByMesanId" resultType="Double">
+		SELECT AVG(score) AS score
+		FROM
+			t_mesan_mark
+		WHERE
+			mesan_id = #{mesanId}
+	</select>
+	
+	<select id="getMesanMarkByMesanIdAndUserId" resultType="MesanMark">
+		SELECT id,score,mesan_id,user_id
+		FROM
+			t_mesan_mark
+		WHERE 
+			mesan_id = #{mesanId} 
+		AND
+			user_id = #{userId}
+	</select>
+	
+</mapper>

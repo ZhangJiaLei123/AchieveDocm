@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.OfficeActivityDao">
+    
+	<sql id="officeActivityColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.office_id AS "officeId",
+		a.activity_id AS "activityId",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="officeActivityJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="OfficeActivity" >
+		SELECT 
+			<include refid="officeActivityColumns"/>
+		FROM t_office_activity a
+		<include refid="officeActivityJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OfficeActivity" >
+		SELECT 
+			<include refid="officeActivityColumns"/>
+		FROM t_office_activity a
+		<include refid="officeActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="officeId != null and officeId != ''">
+				AND a.office_id = #{officeId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+				<if test="name != null and name != ''">
+				AND a.name like CONCAT('%',#{name},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OfficeActivity" >
+		SELECT 
+			<include refid="officeActivityColumns"/>
+		FROM t_office_activity a
+		<include refid="officeActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_office_activity(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			office_id,
+			activity_id,
+			type
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{officeId},
+			#{activityId},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_office_activity SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			office_id = #{officeId},
+			activity_id = #{activityId},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_office_activity
+		WHERE id = #{id}
+	</update>
+	
+	<!--删除活动组织关系-->
+	<update id="deleteOfficeActivityByActivId">
+		DELETE FROM t_office_activity
+		WHERE activity_id = #{activId}
+		<if test="type !=null and type != ''">
+			and type = #{type}
+		</if>
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_office_activity SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OfficeActivity" statementType="STATEMENT">
+		select * FROM t_office_activity  where ${propertyName} = '${value}'
+	</select>
+	<!-- 查看组织活动关系 -->
+	<select id="findOfficeListMap" resultType="OfficeActivity">
+		SELECT	
+		s.id,
+		s.name as officeName
+		FROM
+			t_study_activity t
+		INNER JOIN t_office_activity o ON t.id = o.activity_id and o.type =#{type}
+		inner JOIN  sys_office s on s.id = o.office_id
+		where t.id=#{activityId}
+	</select>
+		<!-- 查看活动查询必学人员组织类别 -->
+	<select id="findUserOfficeTypeCount" resultType="Integer">
+	SELECT count(1) from (
+		SELECT
+		DISTINCT	
+		st.id
+		FROM
+			t_study_activity t
+		INNER JOIN t_office_activity o ON t.id = o.activity_id and o.type =#{type}
+		inner JOIN  sys_office s on s.id = o.office_id
+		LEFT JOIN sys_office_type st on s.office_type = st.id
+		where t.id = #{activId}
+		)a 
+	</select>
+	
+	<!-- 查看活动查询必学人员 -->
+	<select id="findUserCount" resultType="Integer">
+	select count(1) from (
+		SELECT
+		DISTINCT	
+		u.id
+		FROM
+			t_study_activity t
+		INNER JOIN t_office_activity o ON t.id = o.activity_id and  o.type =#{type}
+		inner JOIN  sys_office s on s.id = o.office_id
+		inner join sys_user u on u.office_id = s.id
+		where  t.id = #{activId} 
+		)a
+	</select>
+</mapper>

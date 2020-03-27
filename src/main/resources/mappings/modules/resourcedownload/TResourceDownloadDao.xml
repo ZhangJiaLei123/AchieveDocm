@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.resourcedownload.dao.TResourceDownloadDao">
+    
+	<sql id="tResourceDownloadColumns">
+		a.id AS "id",
+		a.user_id AS "user.id",
+		a.resource_id AS "resourceId",
+		a.status AS "status",
+		a.create_time AS "createTime",
+		a.mod_time AS "modTime",
+		user.name AS "user.name",
+		mesan.name AS "resourceName"
+	</sql>
+	
+	<sql id="tResourceDownloadJoins">
+		LEFT JOIN sys_user user ON user.id = a.user_id
+		LEFT JOIN t_mesan_info mesan ON mesan.id=a.resource_id
+	</sql>
+	
+    
+	<select id="get" resultType="TResourceDownload" >
+		SELECT 
+			<include refid="tResourceDownloadColumns"/>
+		FROM t_resource_download a
+		<include refid="tResourceDownloadJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TResourceDownload" >
+		SELECT 
+			<include refid="tResourceDownloadColumns"/>
+		FROM t_resource_download a
+		<include refid="tResourceDownloadJoins"/>
+		<where>
+		    1=1  
+		   <if test="user != null">
+               and user_id=#{user.id}
+           </if>
+		   <if test="status != null and status != 0">
+               and status=#{status}
+           </if>  
+		   <if test="resourceId != null and resourceId != ''">
+               and resource_id=#{resourceId}
+           </if>                       
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TResourceDownload" >
+		SELECT 
+			<include refid="tResourceDownloadColumns"/>
+		FROM t_resource_download a
+		<include refid="tResourceDownloadJoins"/>
+		<where>
+		    1=1  
+		   <if test="user != null">
+               and user_id=#{user.id}
+           </if>
+		   <if test="status != null and status != 0">
+               and status=#{status}
+           </if>  
+		   <if test="resourceId != null and resourceId != ''">
+               and resource_id=#{resourceId}
+           </if>   			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_resource_download(
+			id,
+			user_id,
+			resource_id,
+			status,
+			create_time,
+			mod_time
+		) VALUES (
+			#{id},
+			#{user.id},
+			#{resourceId},
+			#{status},
+			CURRENT_TIMESTAMP,
+			#{modTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_resource_download SET 	
+			user_id = #{user.id},
+			resource_id = #{resourceId},
+			status = #{status},
+			create_time = #{createTime},
+			mod_time = #{modTime}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_resource_download
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_resource_download SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="TResourceDownload" statementType="STATEMENT">
+		select * FROM t_resource_download  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

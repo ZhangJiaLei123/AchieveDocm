@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.tcourse.dao.ICustomerMemberDao">
+
+	<sql id="customerMemberColumns">
+		a.id,
+		a.user_code,
+		a.mt_id,
+		a.trade_leverage,
+		a.account_type,
+		a.open_account_source,
+		a.agent_ib_group,
+		a.hidden_flag,
+		a.readonly_flag,
+		a.enabled_flag,
+		a.create_time,
+		a.update_time
+	</sql>
+	
+	<!-- 根据ID查询账户信息 -->
+	<select id="getById" resultType="com.jeeplus.modules.tcourse.domain.CustomerMember">
+		select 
+			<include refid="customerMemberColumns"/>
+		from mdf_customer_member a where a.id = #{id}
+	</select>
+	
+	<select id="getByEntity" resultType="com.jeeplus.modules.tcourse.domain.CustomerMember">
+		select 
+			<include refid="customerMemberColumns"/>
+		from mdf_customer_member a where 1=1 
+		<if test="id != '' and id != null">
+			and a.id = #{id}
+		</if>	
+		<if test="userCode != '' and userCode != null">
+			and a.user_code = #{userCode}
+		</if>
+		<if test="mtId != '' and mtId != null">
+			and a.mt_id = #{mtId}
+		</if>
+		
+	</select>
+	
+	<select id="findList" resultType="com.jeeplus.modules.tcourse.domain.CustomerMember">
+		select 
+			<include refid="customerMemberColumns"/>
+		from mdf_customer_member a where 1=1
+		<if test="bizEntity.accountType != '' and bizEntity.accountType != null ">
+			and a.account_type = #{bizEntity.accountType}
+		</if>
+		order by a.create_time desc
+			
+	</select>
+	
+	<update id="update">
+		update mdf_customer_member a set 		
+		a.trade_leverage = #{tradeLeverage},
+		a.account_type = #{accountType},
+		a.open_account_source = #{openAccountSource},
+		a.agent_ib_group = #{agentIbGroup},
+		a.update_time = #{updateTime}
+		
+		where a.id = #{id}
+	</update>
+	
+	<update id="delete">
+		update mdf_customer_member a set
+		a.readonly_flag = #{readonlyFlag},
+		a.enabled_flag = #{enabledFlag}
+		where a.id = #{id}
+	</update>
+	
+	<insert id="insert">
+		<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.String">
+			select REPLACE(UUID(),'-','')
+		</selectKey>
+		insert into mdf_customer_member(
+			id,
+			user_code,
+			mt_id,
+			trade_leverage,
+			account_type,
+			open_account_source,
+			agent_ib_group,
+			hidden_flag,
+			readonly_flag,
+			enabled_flag,
+			create_time,
+			update_time
+		) values(
+			#{id},
+			#{userCode},
+			#{mtId},
+			#{tradeLeverage},
+			#{accountType},
+			#{openAccountSource},
+			#{agentIbGroup},
+			#{hiddenFlag},
+			#{readonlyFlag},
+			#{enabledFlag},
+			#{createTime},
+			#{updateTime}
+		);
+	</insert>
+</mapper>

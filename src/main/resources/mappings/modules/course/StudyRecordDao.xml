@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.StudyRecordDao">
+    
+	<sql id="studyRecordColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_id AS "userId",
+		a.course_id AS "courseId",
+		a.activity_id AS "activityId",
+		a.resource_id AS "resourceId",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.activity_dir_id AS "activityDirId"
+	</sql>
+	
+	<sql id="studyRecordJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="StudyRecord" >
+		SELECT 
+			<include refid="studyRecordColumns"/>
+		FROM t_study_record a
+		<include refid="studyRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="StudyRecord" >
+		SELECT 
+			<include refid="studyRecordColumns"/>
+		FROM t_study_record a
+		<include refid="studyRecordJoins"/>
+		LEFT JOIN t_course_info b 
+        ON a.course_id = b.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="resourceId != null and resourceId != ''">
+				AND a.resource_id = #{resourceId}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND b.cou_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{searchContent}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{searchContent}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{searchContent},'%')</if>
+			</if>
+		</where>
+		<!-- <choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+		 	<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>-->
+		ORDER BY a.start_time DESC
+	</select>
+	
+	<select id="findAllList" resultType="StudyRecord" >
+		SELECT 
+			<include refid="studyRecordColumns"/>
+		FROM t_study_record a
+		<include refid="studyRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_study_record(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			course_id,
+			activity_id,
+			resource_id,
+			start_time,
+			end_time,
+			activity_dir_id 
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userId},
+			#{courseId},
+			#{activityId},
+			#{resourceId},
+			#{startTime},
+			#{endTime},
+			#{activityDirId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_study_record SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			user_id = #{userId},
+			course_id = #{courseId},
+			activity_id = #{activityId},
+			resource_id = #{resourceId},
+			start_time = #{startTime},
+			end_time = #{endTime}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_study_record
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_study_record SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="StudyRecord" statementType="STATEMENT">
+		select * FROM t_study_record  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 获得最近的一条数据 -->
+	<select id="getCurrentDate" resultType="StudyRecord" >
+		SELECT 
+			<include refid="studyRecordColumns"/>
+		FROM (
+		SELECT 
+			*
+		FROM t_study_record b
+		<include refid="studyRecordJoins"/>
+		<where>
+			b.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND b.user_id = #{userId}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND b.course_id = #{courseId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND b.activity_id = #{activityId}
+			</if>
+			<if test="resourceId != null and resourceId != ''">
+				AND b.resource_id = #{resourceId}
+			</if>
+		</where>
+		order by b.start_time DESC) a
+		 LIMIT 1
+	</select>
+	
+	
+</mapper>

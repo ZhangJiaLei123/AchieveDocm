@@ -1,0 +1,89 @@
+.webuploader-container {
+	position: relative;
+}
+.webuploader-element-invisible {
+	position: absolute !important;
+	clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+    clip: rect(1px,1px,1px,1px);
+}
+.webuploader-pick {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+	background: #00b7ee;
+	padding: 10px 15px;
+	color: #fff;
+	text-align: center;
+	border-radius: 3px;
+	overflow: hidden;
+}
+.webuploader-pick-hover {
+	background: #00a2d4;
+}
+
+.webuploader-pick-disable {
+	opacity: 0.6;
+	pointer-events:none;
+}
+
+
+.startUploadButton {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+	background: #00b7ee;
+	padding: 10px 15px;
+	color: #fff;
+	text-align: center;
+	border-radius: 3px;
+	overflow: hidden;
+	margin-left: 20px;
+}
+
+#thelist .file-item div.file-panel {
+	position: absolute;
+	height: 0;
+	filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr='#80000000', endColorstr='#80000000')\0;
+	background: rgba( 0, 0, 0, 0.5);
+	width: 100%;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	z-index: 300;
+}
+
+#thelist .file-item div.file-panel span {
+	display: inline;
+	width: 24px;
+	height: 24px;
+	float: right;
+	text-indent: -9999px;
+	overflow: hidden;
+	background: url(./icons.png) no-repeat;
+	margin: 5px 1px 1px;
+	cursor: pointer;
+}
+
+#thelist .file-item div.file-panel span.rotateLeft {
+	background-position: 0 -24px;
+}
+
+#thelist .file-item div.file-panel span.rotateLeft:hover {
+	background-position: 0 0;
+}
+
+#thelist .file-item div.file-panel span.rotateRight {
+	background-position: -24px -24px;
+}
+
+#thelist .file-item div.file-panel span.rotateRight:hover {
+	background-position: -24px 0;
+}
+
+#thelist .file-item div.file-panel span.cancel {
+	background-position: -48px -24px;
+}
+
+#thelist .file-item div.file-panel span.cancel:hover {
+	background-position: -48px 0;
+}

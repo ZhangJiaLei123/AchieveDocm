@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.question.dao.QuestionReleaseDao">
+    
+	<sql id="questionReleaseColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.question_info_id AS "questionInfoId"
+	</sql>
+	
+	<sql id="questionReleaseJoins">
+	</sql>
+	
+	<sql id="questionReleaseJoinsUser">
+	LEFT JOIN sys_user b ON a.create_by=b.id
+	</sql>
+	
+    
+	<select id="get" resultType="QuestionRelease" >
+		SELECT 
+			<include refid="questionReleaseColumns"/>
+			,b.name as "userName"
+		FROM t_question_release a
+		<include refid="questionReleaseJoins"/>
+		<include refid="questionReleaseJoinsUser"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="QuestionRelease" >
+		SELECT 
+			<include refid="questionReleaseColumns"/>
+			,b.name as "userName"
+		FROM t_question_release a
+		<include refid="questionReleaseJoins"/>
+		<include refid="questionReleaseJoinsUser"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="startTime != null and startTime != ''">
+				AND a.start_time = #{startTime}
+			</if>
+			<if test="endTime != null and endTime != ''">
+				AND a.end_time = #{endTime}
+			</if>
+			<if test="questionInfoId != null and questionInfoId != ''">
+				AND a.question_info_id = #{questionInfoId}
+			</if>
+			<if test="userName != null and userName != ''">
+				AND b.name like CONCAT('%','${userName}','%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="QuestionRelease" >
+		SELECT 
+			<include refid="questionReleaseColumns"/>
+		FROM t_question_release a
+		<include refid="questionReleaseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_question_release(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			start_time,
+			end_time,
+			question_info_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{startTime},
+			#{endTime},
+			#{questionInfoId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_question_release SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			question_info_id = #{questionInfoId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_question_release
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_question_release SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="QuestionRelease" statementType="STATEMENT">
+		select * FROM t_question_release  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

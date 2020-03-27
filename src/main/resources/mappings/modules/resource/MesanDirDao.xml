@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.resource.dao.MesanDirDao">
+    
+	<sql id="MesanDirColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.sort AS "sort",
+		a.parent_id AS "parent.id",
+		p.name AS "parent.name",
+		a.parent_ids AS "parentIds"
+	</sql>
+	
+	<sql id="MesanDirJoins">
+		LEFT JOIN t_mesan_dir p ON p.id = a.parent_id
+	</sql>
+	
+    
+	<select id="get" resultType="MesanDir" >
+		SELECT 
+			<include refid="MesanDirColumns"/>
+		FROM t_mesan_dir a
+		<include refid="MesanDirJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MesanDir" >
+		SELECT 
+			<include refid="MesanDirColumns"/>
+		FROM t_mesan_dir a
+		<include refid="MesanDirJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="sort != null and sort != ''">
+				AND a.sort = #{sort}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_id = #{parentIds}
+			</if>
+			<if test="upateDateId != null and upateDateId != ''">
+				and a.id != #{upateDateId} and a.id not in(SELECT id FROM t_mesan_dir  WHERE FIND_IN_SET(id,getMesanDirChildList(#{upateDateId})))
+			</if>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort asc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MesanDir" >
+		SELECT 
+			<include refid="MesanDirColumns"/>
+		FROM t_mesan_dir a
+		<include refid="MesanDirJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_mesan_dir(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			sort,
+			parent_id,
+			parent_ids
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{sort},
+			#{parentId},
+			#{parentIds}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_mesan_dir SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			sort = #{sort},
+			parent_id = #{parentId},
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_mesan_dir
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_mesan_dir SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="updateParentIds">
+		UPDATE t_mesan_dir SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="MesanDir" statementType="STATEMENT">
+		select * FROM t_mesan_dir  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

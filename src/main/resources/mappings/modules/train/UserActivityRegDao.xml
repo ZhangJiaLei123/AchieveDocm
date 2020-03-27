@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.UserActivityRegDao">
+    
+	<sql id="userActivityRegColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.activity_id AS "activityId",
+		a.audit_state AS "auditState",
+		a.audit_time AS "auditTime",
+		a.audit_user AS "auditUser",
+		a.audit_advice AS "auditAdvice"
+	</sql>
+	
+	<sql id="userActivityRegJoins">
+	</sql>
+	
+	<sql id="userActivityRegJoinsUserName">
+	LEFT JOIN sys_user b ON a.create_by=b.id
+	</sql>
+	
+    
+	<select id="get" resultType="UserActivityReg" >
+		SELECT 
+			<include refid="userActivityRegColumns"/>
+		FROM t_user_activity_reg a
+		<include refid="userActivityRegJoins"/>
+		<where>
+			a.del_flag = 0
+				AND a.id = #{id}
+			<!-- <if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="activityId != null and activityId != ''">
+			    AND a.activity_id = #{activityId}
+			</if> -->
+		</where>
+	</select>
+	
+	<select id="findList" resultType="UserActivityReg" >
+		SELECT 
+			<include refid="userActivityRegColumns"/>
+			,b.name as "userName"
+		FROM t_user_activity_reg a
+		<include refid="userActivityRegJoins"/>
+		<include refid="userActivityRegJoinsUserName"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="userName != null and userName != ''">
+				AND b.name = #{userName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findAllList" resultType="UserActivityReg" >
+		SELECT 
+			<include refid="userActivityRegColumns"/>
+		FROM t_user_activity_reg a
+		<include refid="userActivityRegJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_user_activity_reg(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			activity_id,
+			audit_state,
+			audit_time,
+			audit_user,
+			audit_advice
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{activityId},
+			#{auditState},
+			#{auditTime},
+			#{auditUser},
+			#{auditAdvice}
+		)
+	</insert>
+	<insert id="saveForSystem">
+		INSERT INTO t_user_activity_reg(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			activity_id,
+			audit_state,
+			audit_time,
+			audit_user,
+			audit_advice
+		) VALUES (
+			#{id},
+			#{bmUserId},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{activityId},
+			#{auditState},
+			#{auditTime},
+			#{auditUser},
+			#{auditAdvice}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_user_activity_reg SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			activity_id = #{activityId},
+			audit_state = #{auditState},
+			audit_time = #{auditTime},
+			audit_user = #{auditUser},
+			audit_advice = #{auditAdvice}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_user_activity_reg
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteById">
+		DELETE FROM t_user_activity_reg
+		WHERE id = #{id}
+	</update>
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_user_activity_reg SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="UserActivityReg" statementType="STATEMENT">
+		select * FROM t_user_activity_reg  where ${propertyName} = '${value}'
+	</select>
+	<!-- 活动学员管理列表 -->
+	<select id="findUserList"  resultType="User">
+		select ab.id,
+			ab.name,
+			ab.officeName, 
+			score,
+			userId,
+			ab.loginName,
+			ab.officeCode
+		 from ((SELECT
+			tu.id,
+			u.id as userId,
+			u. NAME,
+			o. NAME AS officeName,
+			u.login_name as loginName,
+			o.code as officeCode
+		FROM
+			t_study_activity t
+		INNER JOIN t_user_activity tu ON t.id = tu.activity_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where t.id = #{officeId})
+	union all
+	(
+	SELECT
+				t.id,
+				u.id as userId,
+				u. NAME,
+				o. NAME AS officeName,
+				u.login_name as loginName,
+				o.code as officeCode
+			FROM
+				t_user_activity_reg t
+			INNER JOIN sys_user u ON t.create_by = u.id
+			INNER JOIN sys_office o ON o.id = u.office_id
+			where t.activity_id = #{officeId}  and t.audit_state = 1
+			order by t.audit_state  asc 
+	))ab left join (select user_id, sum(res_score) as score from (
+select distinct t.user_id,d.res_score,t.resource_id from t_study_record t left join t_distribu_temp d on t.activity_id = d.activity_id and t.resource_id = d.ref_id
+where t.activity_id =#{officeId} 
+)a group by user_id ) ac on ab.userId = ac.user_id
+
+	</select>
+	
+	
+	
+	<!-- 机构管理员学员管理列表 -->
+	<select id="findUserListForJgSystem"  resultType="User">
+		select ab.id,
+			ab.name,
+			ab.officeName, 
+			score,
+			userId,
+			ab.loginName,
+			ab.officeCode
+		 from ((SELECT
+			tu.id,
+			u.id as userId,
+			u. NAME,
+			o. NAME AS officeName,
+			u.login_name as loginName,
+			o.code as officeCode
+		FROM
+			t_study_activity t
+		INNER JOIN t_user_activity tu ON t.id = tu.activity_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where t.id = #{officeId}  and u.office_id = (select office_id from sys_user where id = #{id}) )
+	union all
+	(
+	SELECT
+				t.id,
+				u.id as userId,
+				u. NAME,
+				o. NAME AS officeName,
+				u.login_name as loginName,
+				o.code as officeCode
+			FROM
+				t_user_activity_reg t
+			INNER JOIN sys_user u ON t.create_by = u.id
+			INNER JOIN sys_office o ON o.id = u.office_id
+			where t.activity_id = #{officeId}  and t.audit_state = 1  and u.office_id = (select office_id from sys_user where id = #{id})
+			order by t.audit_state  asc 
+	))ab left join (select user_id, sum(res_score) as score from (
+select distinct t.user_id,d.res_score,t.resource_id from t_study_record t left join t_distribu_temp d on t.activity_id = d.activity_id and t.resource_id = d.ref_id
+where t.activity_id =#{officeId} 
+)a group by user_id ) ac on ab.userId = ac.user_id
+
+
+	</select>
+	
+	
+	
+	<!-- 活动报名审批列表 -->
+		<select id="findBmUserList"  resultType="User">
+		SELECT
+			t.id,
+			u. NAME,
+			o. NAME AS officeName,
+			t.audit_state as shStatus
+		FROM
+			t_user_activity_reg t
+		INNER JOIN sys_user u ON t.create_by = u.id
+		INNER JOIN sys_office o ON o.id = u.office_id
+		where t.activity_id = #{officeId} 
+		order by t.audit_state  asc 
+	</select>
+	
+	<!-- 根据用户id 和activity id，获取用户信息 -->
+	<select id="getByUserIdAndActivityId" resultType="UserActivityReg" >
+		SELECT 
+			<include refid="userActivityRegColumns"/>
+		FROM t_user_activity_reg a
+		<include refid="userActivityRegJoins"/>
+		<where>
+			a.del_flag = 0
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="activityId != null and activityId != ''">
+			    AND a.activity_id = #{activityId}
+			</if> 
+		</where>
+	</select>
+	
+	<update id="deleteByUserIdAndActivityId">
+		DELETE FROM t_user_activity_reg
+		WHERE create_by = #{createBy.id} AND
+		activity_id = #{activityId}
+	</update>
+</mapper>

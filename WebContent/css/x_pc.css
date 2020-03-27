@@ -1,0 +1,441 @@
+/*小图标*/
+.icon_1{
+	padding-left:20px;
+	background:url(../images/icon_1.png) no-repeat left center;
+}
+.icon_2{
+	padding-left:20px;
+	background:url(../images/icon_2.png) no-repeat left center;
+}
+.icon_3{
+	padding-left:14px;
+	background:url(../images/icon_3.png) no-repeat left center;
+}
+.icon_4{
+	padding-left:16px;
+	background:url(../images/icon_4.png) no-repeat left center;
+}
+.icon_5{
+	padding-left:20px;
+	background:url(../images/icon_5.png) no-repeat left center;
+}
+.icon_6{
+	padding-left:19px;
+	background:url(../images/icon_6.png) no-repeat left center;
+}
+.icon_7{
+	padding-left:22px;
+	background:url(../images/icon_7.png) no-repeat left center;
+}
+.icon_8{
+	padding-left:28px;
+	background:url(../images/icon_8.png) no-repeat left center;
+}
+/*小图标*/
+.main{
+	border-top:1px solid #d8d8d8;
+}
+.bg{
+	background:#dce4ea;
+}
+/*==========首页==========*/
+.home_main .menu_tab .title{
+	font-size:20px;
+	color:#2c3e50;
+	margin-top:40px;
+	margin-bottom:40px;
+}
+.home_main .menu_tab .tab{
+	margin-top:42px;
+}
+.home_main .menu_tab .tab span{
+	font-size:15px;
+	color:#2c3e50;
+	margin-left:40px;
+}
+.home_main .menu_tab .tab .on{
+	color:#18a589;
+}
+/*列表1*/
+.list1 ul li:first-child{
+	margin-left:0;
+}
+.list1 ul li{
+	float:left;
+	margin-left:32px;
+	border-bottom:4px solid #18a589;
+}
+.list1 ul li a{
+	float:left;
+	width:261px;
+	border:1px solid #ececec;
+	box-sizing:border-box;
+}
+.list1 ul li a .livecard_img{
+	width:100%;
+	height:148px;
+	overflow:hidden;
+}
+.list1 ul li a .livecard_img img{
+	width:100%;
+	height:100%;
+	transition:all 2s;
+}
+.list1 ul li a:hover .livecard_img img{
+	transform:scale(1.1);
+	-webkit-transform:scale(1.1);
+}
+.list1 ul li a .livecard_text{
+	padding:20px;
+	box-sizing:border-box;
+}
+.list1 ul li a .livecard_text h3{
+	font-size:16px;
+	color:#323232;
+	margin-bottom:10px;
+}
+.list1 ul li a .livecard_text p{
+	font-size:12px;
+	color:#6f6f6f;
+	line-height:20px;
+}
+.list1 ul li a .livecard_user{
+	height:55px;
+	line-height:55px;
+	font-size:16px;
+	color:#323232;
+	padding-left:20px;
+	padding-right:20px;
+	box-sizing:border-box;
+	background:#f5f5f5;
+}
+/*列表1 end*/
+
+/*列表2*/
+.home_main .list2 ul li:first-child{
+	margin-top:0;
+}
+.home_main .list2 ul li{
+	float:left;
+	height:327px;
+	margin-top:30px;
+	border-bottom:4px solid #18a589;
+}
+.home_main .list2 ul li a{
+	float:left;
+	width:261px;
+	border:1px solid #ececec;
+	box-sizing:border-box;
+}
+.home_main .list2 ul li a .livecard_img{
+	width:100%;
+	height:148px;
+	overflow:hidden;
+}
+.home_main .list2 ul li a .livecard_img img{
+	width:100%;
+	height:100%;
+	transition:all 2s;
+}
+.home_main .list2 ul li a:hover .livecard_img img{
+	transform:scale(1.1);
+	-webkit-transform:scale(1.1);
+}
+.home_main .list2 ul li a .livecard_text{
+	padding:20px;
+	box-sizing:border-box;
+}
+.home_main .list2 ul li a .livecard_text h3{
+	font-size:16px;
+	color:#323232;
+	margin-bottom:10px;
+}
+.home_main .list2 ul li a .livecard_text p{
+	font-size:12px;
+	color:#6f6f6f;
+	line-height:20px;
+}
+.home_main .list2 ul li a .livecard_user{
+	height:55px;
+	line-height:55px;
+	font-size:16px;
+	color:#323232;
+	padding-left:20px;
+	padding-right:20px;
+	box-sizing:border-box;
+	background:#f5f5f5;
+}
+.home_main .list2 ul li .details{
+	float:left;
+	width:879px;
+	padding-left:40px;
+	padding-right:40px;
+	box-sizing:border-box;
+}
+.home_main .list2 ul li .details p{
+	font-size:15px;
+	color:#323232;
+	line-height:40px;
+}
+/*列表2 end*/
+
+/*==========首页 end==========*/
+
+/*==========学习活动==========*/
+.detail_main .main_pic{
+	width:570px;
+	height:280px;
+}
+.detail_main .main_box{
+	position:relative;
+	width:568px;
+	height:280px;
+	padding-top:30px;
+	padding-left:30px;
+	padding-right:30px;
+	border-top:1px solid #d8d8d8;
+	border-right:1px solid #d8d8d8;
+	border-bottom:5px solid #18a589;
+	box-sizing:border-box;
+}
+.detail_main .main_box .title{
+	font-size:20px;
+	color:#323232;
+}
+.detail_main .main_box .closing_date{
+	color:#4a4a4a;
+	margin-top:20px;
+	margin-bottom:48px;
+}
+.detail_main .main_box .infobar{
+	overflow:hidden;
+}
+.detail_main .main_box .infobar button{
+	width:120px;
+	height:40px;
+	font-size:16px;
+	color:#ffffff;
+	cursor:pointer;
+	background:#18a589;
+}
+.detail_main .main_box .infobar .time{
+	height:40px;
+	line-height:40px;
+	color:#4a4a4a;
+}
+.detail_main .main_box .infobar .time span{
+	color:#ff4d4d;
+}
+.detail_main .main_box .deadline{
+	position:absolute;
+	left:0;
+	bottom:0;
+	width:100%;
+	height:59px;
+	line-height:59px;
+	font-size:18px;
+	color:#323232;
+	padding-left:30px;
+	padding-right:30px;
+	box-sizing:border-box;
+	background:#f7f7f7;
+}
+.detail_main .detail_detail{
+	margin-top:54px;
+}
+.detail_main .detail_detail .tab{
+	overflow:hidden;
+}
+.detail_main .detail_detail .tab a{
+	float:left;
+	width:98px;
+	height:38px;
+	line-height:38px;
+	color:#414141;
+	text-align:center;
+	border-top:1px solid #e3eaef;
+	border-left:1px solid #e3eaef;
+	border-right:1px solid #e3eaef;
+	background:#f8f8f8;
+	margin-right:2px;
+	box-sizing:border-box;
+}
+.detail_main .detail_detail .tab .on{
+	border-top:2px solid #09b29b;
+	background:#ffffff;
+}
+.detail_main .detail_detail .detail_con.on{
+	display:block;
+}
+.detail_main .detail_detail .detail_con{
+	display:none;
+	border:1px solid #e3eaef;
+	padding-top:40px;
+	padding-left:20px;
+	padding-right:20px;
+}
+/*活动介绍*/
+.detail_main .detail_detail .detail_con .event_introduction p{
+	line-height:26px;
+	color:#414141;
+}
+/*活动介绍 end*/
+
+/*活动目录*/
+.detail_main .detail_detail .detail_con .activity_catalog ul li h3{
+	height:40px;
+	line-height:40px;
+	font-size:16px;
+	border-left:8px solid #09b29b;
+	background:#f8f8f8;
+}
+.detail_main .detail_detail .detail_con .activity_catalog ul li h3 b{
+	color:#000000;
+	margin-left:14px;
+	margin-right:14px;
+}
+.detail_main .detail_detail .detail_con .activity_catalog ul li h3 span{
+	margin-left:60px;
+	color:#4a4a4a;
+}
+.detail_main .detail_detail .detail_con .activity_catalog ul li h3 span a{
+	color:#1c84c6;
+}
+.detail_main .detail_detail .detail_con .activity_catalog ul li .table{
+	padding:20px;
+}
+.detail_main .detail_detail .detail_con .activity_catalog ul li .table p{
+	margin-top:18px;
+}
+.detail_main .detail_detail .detail_con .activity_catalog ul li .table p span{
+	color:#4a4a4a;
+	margin-left:30px;
+	margin-right:30px;
+}
+.detail_main .detail_detail .detail_con .activity_catalog ul li .table p span a{
+	color:#1c84c6;	
+}
+/*弹出层*/
+.detail_main .detail_detail .detail_con .activity_catalog .popup_content{
+	display:none;
+	position:fixed;
+	top:50%;
+	left:50%;
+	z-index:9999;
+	width:410px;
+	height:200px;
+	padding:27px;
+	margin-top:-100px;
+	margin-left:-205px;
+	background:#ffffff;
+	box-sizing:border-box;
+	box-shadow:0 2px 4px 0 rgba(0,0,0,0.50);
+	border-radius:4px;
+}
+.detail_main .detail_detail .detail_con .activity_catalog .popup_content .close{
+	color:#18a589;
+	margin-bottom:18px;
+}
+.detail_main .detail_detail .detail_con .activity_catalog .popup_content table{
+}
+.detail_main .detail_detail .detail_con .activity_catalog .popup_content table tr td{
+	height:26px;
+	text-indent:1em;
+	color:#4a4a4a;
+	border:2px solid #e3e9ee;
+}
+/*弹出层 end*/
+
+/*活动目录 end*/
+
+/*授课时间*/
+.detail_main .detail_detail .detail_con .teaching_time ul li:first-child{
+	margin-left:0;
+}
+.detail_main .detail_detail .detail_con .teaching_time ul li{
+	float:left;
+	width:350px;
+	margin-left:20px;
+}
+.detail_main .detail_detail .detail_con .teaching_time ul li h3{
+	height:50px;
+	line-height:50px;
+	text-align:center;
+	font-size:18px;
+	color:#ffffff;
+	background:#18a589;
+}
+.detail_main .detail_detail .detail_con .teaching_time ul li .table{
+	padding:20px;
+	border:1px solid #e3e9ee;
+	margin-bottom:18px;
+}
+.detail_main .detail_detail .detail_con .teaching_time ul li .table p{
+	margin-top:18px;
+}
+.detail_main .detail_detail .detail_con .teaching_time ul li .table p span{
+	color:#4a4a4a;
+	margin-left:30px;
+	margin-right:30px;
+}
+.detail_main .detail_detail .detail_con .teaching_time ul li .table p span a{
+	color:#1c84c6;
+}
+/*授课时间 end*/
+
+/*==========学习活动 end==========*/
+
+/*==========课程库==========*/
+/*继续学习word*/
+.word_main{
+	height:580px;
+	padding-left:195px;
+	padding-right:195px;
+	padding-bottom:130px;
+	overflow-y:scroll;
+	box-sizing:border-box;
+	background:#ffffff;
+}
+.word_main h3{
+	font-size:20px;
+	color:#414141;
+	margin-top:40px;
+	margin-bottom:40px;
+	text-align:center;
+}
+.word_main p{
+	color:#414141;
+}
+/*继续学习word end*/
+
+/*继续学习视频*/
+.video_main{
+	text-align:center;
+	background:#ffffff;
+}
+.video_main video{
+	width:1024px;
+	height:580px;
+}
+
+.frequency_main{
+	text-align:center;
+	background:#ffffff;
+}
+.frequency_main audio{
+	width:800px;
+	height:80px;
+}
+/*==========课程库 end==========*/
+/*==========学习记录 begin==========*/
+.banner-swiper {width: 1024px;margin:0 auto;}
+.swiper-button-next, .swiper-button-prev {width: 36px;height: 48px;margin-top: -24px;}
+.swiper-button-prev, .swiper-container-rtl .swiper-button-next {background-image: url('../img/prev.png');}
+.swiper-button-next, .swiper-container-rtl .swiper-button-prev {background-image: url('../img/next.png');}
+.swiper-pagination-current{color: #70cf56;}
+.banner-swiper .pagechange {top:100%;width: 90px;height: 20px;margin-top: -27px;font-size: 14px;line-height: 20px;padding-left:20px;background-repeat: no-repeat;background-size: 15px 14px;background-position: left center}
+.banner-swiper .pagechange.pageprev {right:50%;margin-right:-140px;background-image: url('../images/pagenextf.png')}
+.banner-swiper .pagechange.pagenext {left:50%;margin-left:-90px;background-image: url('../images/pageprevf.png')}
+.banner-swiper .pagechange.pageprev:hover {background-image: url('../images/pagenext.png')}
+.banner-swiper .pagechange.pagenext:hover {background-image: url('../images/pageprev.png')}
+/*==========学习记录 end==========*/

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.question.dao.QuestionInfoDao">
+    
+	<sql id="questionInfoColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.que_name AS "queName",
+		a.status AS "status",
+		COUNT(b.id) as "pNum" 
+	</sql>
+	
+	<sql id="questionInfoJoins">
+	 left join (select * from t_question_problem bb where bb.del_flag=0 ) b on a.id = b.question_id 
+	</sql>
+	
+    
+	<select id="get" resultType="QuestionInfo" >
+		SELECT 
+			<include refid="questionInfoColumns"/>
+		FROM t_question_info a
+		<include refid="questionInfoJoins"/>
+		WHERE a.id = #{id}
+		GROUP BY a.id
+	</select>
+	
+	<select id="findList" resultType="QuestionInfo" >
+		SELECT 
+			<include refid="questionInfoColumns"/>
+		FROM t_question_info a
+		<include refid="questionInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="queName != null and queName != ''">
+				AND a.que_name like
+				<if test="dbName == 'mysql'">concat('%',#{queName},'%')</if>
+			</if>
+			AND a.status!='0'
+			GROUP BY a.id
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	
+	<select id="findSelQuesInfoPage" resultType="QuestionInfo" >
+		select  a.id AS "id",
+		t.id as "qreleaseId",
+		a.create_by AS "createBy.id",
+		t.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.que_name AS "queName",
+		a.status AS "status"
+		from t_question_info a
+		inner join t_question_release  t on a.id = t.question_info_id
+	where t.end_time >CURDATE() and a.status !=0 
+		and t.id not in(SELECT
+				tr.id
+				FROM
+					t_distribu_temp t
+				INNER JOIN t_question_release tr ON t.ref_id = tr.id
+				WHERE
+					t.del_flag = 0
+				AND t.activity_dir_id = #{activityDirId}
+				AND t.activity_id = #{activityId})
+			<if test="queName != null and queName != ''">
+				AND a.que_name like
+				<if test="dbName == 'mysql'">concat('%',#{queName},'%')</if>
+			</if>	
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	
+	<select id="findAllList" resultType="QuestionInfo" >
+		SELECT 
+			<include refid="questionInfoColumns"/>
+		FROM t_question_info a
+		<include refid="questionInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+		GROUP BY a.id
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_question_info(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			que_name,
+			status
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{queName},
+			#{status}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_question_info SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			que_name = #{queName},
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_question_info
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_question_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="QuestionInfo" statementType="STATEMENT">
+		select * FROM t_question_info  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

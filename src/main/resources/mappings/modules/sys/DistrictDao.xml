@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.dao.DistrictDao">
+    
+	<sql id="districtColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.code AS "code",
+		a.sort AS "sort"
+	</sql>
+	
+	<sql id="districtJoins">
+
+	</sql>
+	
+    
+	<select id="get" resultType="District" >
+		SELECT 
+			<include refid="districtColumns"/>
+		FROM t_district a
+		<include refid="districtJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findPageList" resultType="District" >
+		SELECT 
+			<include refid="districtColumns"/>,
+				tc.cityname AS "cityName",
+		tp.proincename AS "provinceName",
+		td.id AS "districtCityId"
+		FROM t_district a
+			LEFT JOIN t_district_city td ON a.id = td.district_id
+		LEFT JOIN t_city tc ON td.city_id = tc.cityid
+		LEFT JOIN t_province tp ON tc.provinceid = tp.provinceid
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="name != null and name != ''">
+			AND a.name LIKE 
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+		</if>
+		<if test="code != null and code != ''">
+			AND a.code =#{code} 
+				
+		</if>
+		<if test="sort != null and sort != ''">
+			AND a.sort = #{sort}
+		</if>
+		order by a.name,tp.provinceid asc ,tc.cityid asc
+	</select>
+	<!-- 查询所有已经选中的省市 -->
+	<select id="findAllCheckedProvinceAndCity" resultType="Map">
+		SELECT
+			t.provinceid,
+			t.proincename,
+			tc.cityid,
+			tc.cityname,
+			td.city_id as ischk 
+		FROM
+			t_province t
+		INNER JOIN t_city tc ON t.provinceid = tc.provinceid
+		INNER JOIN t_district_city td ON tc.cityid = td.city_id
+		AND td.district_id = #{districtId}
+		where t.provinceid in (SELECT
+			tp.provinceid
+		FROM
+			t_district a 
+		INNER JOIN t_district_city td ON a.id = td.district_id
+		INNER JOIN t_city tc ON td.city_id = tc.cityid
+		INNER JOIN t_province tp ON tc.provinceid = tp.provinceid
+		where a.id = #{districtId}
+		)order by t.provinceid asc,tc.cityid asc
+	</select>
+		
+	<select id="findList" resultType="District" >
+		SELECT 
+			<include refid="districtColumns"/>
+		FROM t_district a
+		<include refid="districtJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="code != null and code != ''">
+				AND a.code =#{code} 
+					
+			</if>
+			<if test="sort != null and sort != ''">
+				AND a.sort = #{sort}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="District" >
+		SELECT 
+			<include refid="districtColumns"/>
+		FROM t_district a
+		<include refid="districtJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+		
+	<select id="getProinceByDistrictId" resultType="Map" >
+			SELECT
+				distinct 
+				tp.proincename,
+				tp.provinceid
+			FROM
+				t_district_city td
+			INNER JOIN t_city tc ON td.city_id = tc.cityid
+			INNER JOIN t_province tp ON tc.provinceid = tp.provinceid
+			WHERE
+				td.district_id = #{districtId}
+			order by tp.provinceid asc
+		</select>
+		
+		<select id="getCityByDistrictId" resultType="Map" >
+				SELECT
+					distinct 
+					tc.cityid,
+					tc.cityname
+				FROM
+					t_district_city td
+				INNER JOIN t_city tc ON td.city_id = tc.cityid
+				INNER JOIN t_province tp ON tc.provinceid = tp.provinceid
+				WHERE
+					td.district_id = #{districtId}
+					and tp.provinceid = #{provinceId}
+				order by tc.cityid asc
+
+		</select>
+		
+	<insert id="insert">
+		INSERT INTO t_district(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			sort,
+			code
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{sort},
+			#{code}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_district SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			sort = #{sort},
+			code = #{code}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_district
+		WHERE id = #{id}
+	</update>
+		<!--删除大区城市关系-->
+	<update id="deleteProvinceCity">
+		delete from t_district_city where district_id = #{districtId}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_district SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="District" statementType="STATEMENT">
+		select * FROM t_district  where ${propertyName} = '${value}'
+	</select>
+	<select id="findAllProvinceList" resultType="map">
+		select provinceid,proincename from t_province order by provinceid asc
+	</select>
+	
+	<select id="findAllCityList" resultType="map">
+		select * from t_city
+	</select>
+	
+	<select id="getCityByProvinceId" resultType="map">
+		select * from t_city where provinceid in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">  
+			 #{item}  
+		</foreach> 
+				
+		group by provinceid asc,cityid asc
+	</select>
+	
+	
+	<select id="findAllCityByProvId" resultType="map">
+		select * from t_city where provinceid in(#{provinceid}) order by provinceid asc,cityid asc
+	</select>
+	
+	<select id="findProvCityPageList" resultType="ProvinceCity">
+		SELECT
+			t.proincename AS provinceName,
+			c.cityname AS cityName
+		FROM
+			t_province t
+		INNER JOIN t_city c ON t.provinceid = c.provinceid
+		ORDER BY
+			t.provinceid ASC,
+			c.cityid ASC
+	</select>
+	
+</mapper>

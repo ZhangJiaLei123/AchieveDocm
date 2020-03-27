@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.record.dao.UserStudyRecordAllTimeDao">
+    
+	<sql id="userStudyRecordAllTimeColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_id AS "userId",
+		a.time AS "time"
+	</sql>
+	
+	<sql id="userStudyRecordAllTimeJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="UserStudyRecordAllTime" >
+		SELECT 
+			<include refid="userStudyRecordAllTimeColumns"/>
+		FROM t_user_study_record_alltime a
+		<include refid="userStudyRecordAllTimeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="UserStudyRecordAllTime" >
+		SELECT 
+			<include refid="userStudyRecordAllTimeColumns"/>
+		FROM t_user_study_record_alltime a
+		<include refid="userStudyRecordAllTimeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UserStudyRecordAllTime" >
+		SELECT 
+			<include refid="userStudyRecordAllTimeColumns"/>
+		FROM t_user_study_record_alltime a
+		<include refid="userStudyRecordAllTimeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_user_study_record_alltime(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			time
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userId},
+			#{time}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_user_study_record_alltime SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			user_id = #{userId},
+			time = #{time}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_user_study_record_alltime
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_user_study_record_alltime SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="UserStudyRecordAllTime" statementType="STATEMENT">
+		select * FROM t_user_study_record_alltime  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="getByUserId" resultType="UserStudyRecordAllTime" >
+		SELECT 
+			<include refid="userStudyRecordAllTimeColumns"/>
+		FROM t_user_study_record_alltime a
+		<include refid="userStudyRecordAllTimeJoins"/>
+		WHERE a.user_id = #{userId}
+	</select>
+	<select id="statisStudentOnlineTime" resultType="User" >
+
+	SELECT
+		a.id,
+		a.name,
+		a.login_name as loginName,
+		o.name as  "officeName",
+		tu.time*60 as onLineTime,
+		ts.courseTime,
+		tsr.studyTime,
+		tur.mesanTime
+	FROM
+		sys_user a
+	LEFT JOIN t_user_study_record_alltime tu ON a.id = tu.user_id
+	LEFT join sys_office o on a.office_id = o.id
+	LEFT JOIN sys_user_role ur on ur.user_id = a.id
+	LEFT JOIN sys_role r on r.id = ur.role_id
+	LEFT JOIN (select SUM(UNIX_TIMESTAMP(ts.end_time)-UNIX_TIMESTAMP(ts.start_time)) as  courseTime , user_id from t_study_record ts WHERE  course_id is not null
+group by user_id) ts on ts.user_id = a.id 
+  LEFT JOIN (select SUM(UNIX_TIMESTAMP(ts.end_time)-UNIX_TIMESTAMP(ts.start_time)) as  studyTime , user_id from t_study_record ts WHERE  activity_id is not null
+group by user_id) tsr on tsr.user_id = a.id 
+	LEFT JOIN (
+	SELECT
+		tur.user_id,
+		sum(
+			UNIX_TIMESTAMP(
+				str_to_date(tur.end_time, '%Y-%m-%d %T')
+			) - UNIX_TIMESTAMP(
+				str_to_date(
+					tur.start_time,
+					'%Y-%m-%d %T'
+				)
+			)
+		)  AS mesanTime
+	FROM
+		t_user_study_record_material tur
+	GROUP BY
+		tur.user_id
+) tur ON a.id = tur.user_id
+	where a.del_flag = #{DEL_FLAG_NORMAL}
+	<if test="roleEnName != null and roleEnName != ''">
+		and r.enname = #{roleEnName}
+	</if>
+	<if test="loginName != null and loginName != ''">
+			AND a.login_name like 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{loginName}, '%')</if>
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		<if test="officeName != null and officeName != ''">
+			AND o.name like 
+					<if test="dbName == 'oracle'">'%'||#{officeName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{officeName}, '%')</if>
+		</if>
+		<if test="office != null and office.id != null and office.id != ''">
+			AND (o.id = #{office.id} OR o.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{office.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{office.id}, ',%'))</if>
+		</if>
+		group by a.id 
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY  onLineTime desc ,courseTime desc ,studyTime desc ,mesanTime desc
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

@@ -1,0 +1,1036 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.dao.UserDao">
+	
+	<!-- <resultMap id="userResult" type="User">
+		<id property="id" column="id" />
+		<result property="company.id" column="company.id" />
+		<result property="office.id" column="office.id" />
+		<result property="loginName" column="login_name" />
+		<result property="password" column="password" />
+		<result property="no" column="no" />
+		<result property="name" column="name" />
+		<result property="email" column="email" />
+		<result property="phone" column="phone" />
+		<result property="mobile" column="mobile" />
+		<result property="userType" column="user_type" />
+		<result property="loginIp" column="login_ip" />
+		<result property="loginDate" column="login_date" />
+		<result property="remarks" column="remarks" />
+		<result property="loginFlag" column="loginFlag" />
+		<result property="photo" column="photo" />
+		<result property="createBy.id" column="createBy.id" />
+		<result property="createDate" column="create_date" />
+		<result property="updateBy.id" column="updateBy.id" />
+		<result property="updateDate" column="update_date" />
+		<result property="company.name" column="company.name" />
+		<result property="company.parentId" column="company.parentId" />
+		<result property="company.parentIds" column="company.parentIds" />
+		<result property="company.area.id" column="company.area.id" />
+		<result property="company.area.name" column="company.area.name" />
+		<result property="company.area.parentId" column="company.area.parentId" />
+		<result property="company.area.parentIds" column="company.area.parentIds" />
+		<result property="company.primaryPerson.id" column="company.primaryPerson.id" />
+		<result property="company.primaryPerson.name" column="company.primaryPerson.name" />
+		<result property="company.deputyPerson.id" column="company.deputyPerson.id" />
+		<result property="company.deputyPerson.name" column="company.deputyPerson.name" />
+		<result property="office.name" column="office.name" />
+		<result property="office.parentId" column="office.parentId" />
+		<result property="office.parentIds" column="office.parentIds" />
+		<result property="office.area.id" column="office.area.id" />
+		<result property="office.area.name" column="office.area.name" />
+		<result property="office.area.parentId" column="office.area.parentId" />
+		<result property="office.area.parentIds" column="office.area.parentIds" />
+		<result property="office.primaryPerson.id" column="office.primaryPerson.id" />
+		<result property="office.primaryPerson.name" column="office.primaryPerson.name" />
+		<result property="office.deputyPerson.id" column="office.deputyPerson.id" />
+		<result property="office.deputyPerson.name" column="office.deputyPerson.name" />
+		<collection property="roleList" ofType="Role">
+			<id property="id" column="roleList.id" />
+			<result property="office.id" column="roleList.office.id" />
+			<result property="name" column="roleList.name" />
+			<result property="enname" column="roleList.enname" />
+			<result property="roleType" column="roleList.roleType" />
+			<result property="dataScope" column="roleList.dataScope" />
+			<collection property="officeList" ofType="Office">
+				<id property="id" column="roleList.officeList.id" />
+			</collection>
+		</collection>
+	</resultMap> -->
+	
+    <sql id="userColumns">
+    	a.id,
+    	a.company_id AS "company.id",
+    	a.office_id AS "office.id",
+    	a.login_name,
+    	a.password,
+    	a.no,
+		a.name,
+		a.email,
+		a.phone,
+		a.mobile,
+		a.user_type,
+		a.login_ip,
+		a.login_date,
+		a.remarks,
+		a.login_flag,
+		a.photo,
+		a.qrcode,
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag,
+		a.id_num as "idNum",
+		a.entry_date as "entryDate",
+		a.filing_date as "filingDate",
+		a.family_name as "familyName",
+		a.verifyUrl as verifyUrl,
+    	c.name AS "company.name",
+    	c.parent_id AS "company.parent.id",
+    	c.parent_ids AS "company.parentIds",
+    	ca.id AS "company.area.id",
+    	ca.name AS "company.area.name",
+    	ca.parent_id AS "company.area.parent.id",
+    	ca.parent_ids AS "company.area.parentIds",
+    	o.name AS "office.name",
+    	o.parent_id AS "office.parent.id",
+    	o.parent_ids AS "office.parentIds",
+    	oa.id AS "office.area.id",
+    	oa.name AS "office.area.name",
+    	oa.parent_id AS "office.area.parent.id",
+    	oa.parent_ids AS "office.area.parentIds",
+    	cu.id AS "company.primaryPerson.id",
+    	cu.name AS "company.primaryPerson.name",
+    	cu2.id AS "company.deputyPerson.id",
+    	cu2.name AS "company.deputyPerson.name",
+    	ou.id AS "office.primaryPerson.id",
+    	ou.name AS "office.primaryPerson.name",
+    	ou2.id AS "office.deputyPerson.id",
+    	ou2.name AS "office.deputyPerson.name",
+    	pi.name AS "postName",
+    	t.name AS "officeTypeName",
+    	o.name AS "officeName",
+    	o.code AS "officeCode",
+    	r.name AS "roleName",
+    	r.enname AS "role.enname",
+    	r.id AS "role.id",
+    	r.name AS "role.name",
+    	ta.status AS "shStatus",
+    	tpt.name AS "postTypeName",
+    	tpl.name AS "postLevelName"
+    	<!-- ,
+        r.id AS "roleList.id",
+        r.office_id AS "roleList.office.id",
+        r.name AS "roleList.name",
+        r.enname AS "roleList.enname",
+        r.role_type AS "roleList.roleType",
+        r.data_scope AS "roleList.dataScope" -->
+        
+    </sql>
+    
+    <sql id="userJoins">
+		LEFT JOIN sys_office c ON c.id = a.company_id
+		LEFT JOIN sys_area ca ON ca.id = c.area_id
+		LEFT JOIN sys_office o ON o.id = a.office_id
+		LEFT JOIN sys_area oa ON oa.id = o.area_id
+		LEFT JOIN sys_user cu ON cu.id = c.primary_person
+		LEFT JOIN sys_user cu2 ON cu2.id = c.deputy_person
+		LEFT JOIN sys_user ou ON ou.id = o.primary_person
+		LEFT JOIN sys_user ou2 ON ou2.id = o.deputy_person
+		LEFT JOIN sys_office_type t on o.office_type = t.id
+		LEFT JOIN sys_user_post up on a.id = up.user_id and up.is_default='1'
+		LEFT JOIN t_post_info pi on pi.id = up.post_id
+		LEFT JOIN t_post_type tpt on tpt.id = up.post_type
+		LEFT JOIN t_post_level tpl on tpl.id = up.post_level
+		LEFT JOIN sys_user_role ur on ur.user_id = a.id
+		
+		LEFT JOIN sys_role r on r.id = ur.role_id
+		LEFT JOIN t_approval_record ta on a.id = ta.resource_id
+		<!-- 
+		LEFT JOIN sys_user_role ur ON ur.user_id = a.id
+        LEFT JOIN sys_role r ON r.id = ur.role_id -->
+    </sql>
+	
+	<!-- 根据编号获得用户 -->
+	<select id="get" resultType="User">
+			SELECT
+			<include refid="userColumns"/><!-- ,
+			ro.office_id AS "roleList.officeList.id" -->
+			,a.sex as sex
+		FROM sys_user a
+		<include refid="userJoins"/><!-- 
+		LEFT JOIN sys_role_office ro ON ro.role_id = r.id -->
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 根据登录名查询用户 -->
+	<select id="getByLoginName" resultType="User" parameterType="User">
+		SELECT
+			<include refid="userColumns"/><!-- ,
+			ro.office_id AS "roleList.officeList.id" -->
+		FROM sys_user a
+		<include refid="userJoins"/><!-- 
+		LEFT JOIN sys_role_office ro ON ro.role_id = r.id -->
+		WHERE a.login_name = #{loginName} AND a.del_flag !=1
+	</select>
+	
+	<!-- 分页查询用户信息 -->
+	<select id="findList" resultType="User">
+		SELECT
+			<include refid="userColumns"/>
+		FROM sys_user a
+		<include refid="userJoins"/>
+		<if test="role != null and role.id != null and role.id != ''">
+			JOIN sys_user_role ur ON ur.user_id = a.id AND ur.role_id = #{role.id}
+		</if>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="company != null and company.id != null and company.id != ''">
+			AND (c.id = #{company.id} OR c.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{company.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{company.id}, ',%'))</if>
+		</if>
+		<if test="office != null and office.id != null and office.id != ''">
+			AND (o.id = #{office.id} OR o.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{office.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{office.id}, ',%'))</if>
+		</if>
+		<!-- 如果不是超级管理员，则不显示超级管理员用户 -->
+		<if test="!currentUser.admin">
+			AND a.id != '1'
+		</if>
+		<if test="loginName != null and loginName != ''">
+			AND a.login_name like 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{loginName}, '%')</if>
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		<if test="officeType != null and officeType != ''">
+			and t.id = #{officeType}
+		</if>
+		
+		<if test="officeName != null and officeName != ''">
+			AND o.name like 
+					<if test="dbName == 'oracle'">'%'||#{officeName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{officeName}, '%')</if>
+		</if>
+		<if test="roleEnName != null and roleEnName != ''">
+			and r.enname = #{roleEnName}
+		</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dataScopeFileForUserList}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<!-- 分页查询用户信息 -->
+	<select id="findAddStudyUserList" resultType="User">
+		SELECT
+			a.id,
+			a.name
+		FROM sys_user a
+		<include refid="userJoins"/>
+		<if test="role != null and role.id != null and role.id != ''">
+			JOIN sys_user_role ur ON ur.user_id = a.id AND ur.role_id = #{role.id}
+		</if>
+		
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} and r.enname !='teacher'
+		AND a.id not in (SELECT
+			tu.user_id
+		FROM
+			t_study_activity t
+		INNER JOIN t_user_activity tu ON t.id = tu.activity_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where t.id = #{userActivityId})
+		<if test="company != null and company.id != null and company.id != ''">
+			AND (c.id = #{company.id} OR c.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{company.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{company.id}, ',%'))</if>
+		</if>
+		<if test="office != null and office.id != null and office.id != ''">
+			AND (o.id = #{office.id} OR o.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{office.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{office.id}, ',%'))</if>
+		</if>
+		<!-- 如果不是超级管理员，则不显示超级管理员用户 -->
+		<if test="!currentUser.admin">
+			AND a.id != '1'
+		</if>
+		<if test="loginName != null and loginName != ''">
+			AND a.login_name like 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{loginName}, '%')</if>
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		<if test="officeType != null and officeType != ''">
+			and t.id = #{officeType}
+		</if>
+		
+		<if test="officeName != null and officeName != ''">
+			AND o.name like 
+					<if test="dbName == 'oracle'">'%'||#{officeName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{officeName}, '%')</if>
+		</if>
+		<if test="roleEnName != null and roleEnName != ''">
+			and r.enname = #{roleEnName}
+		</if>
+		
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+		
+	<!-- 机构管理员报名用户 -->
+	<select id="findBmStudyUserListForJgSystem" resultType="User">
+		SELECT
+			a.id,
+			a.name
+		FROM sys_user a
+		<include refid="userJoins"/>
+		<if test="role != null and role.id != null and role.id != ''">
+			JOIN sys_user_role ur ON ur.user_id = a.id AND ur.role_id = #{role.id}
+		</if>
+		
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		AND a.id not in (SELECT
+			tu.user_id
+		FROM
+			t_study_activity t
+		INNER JOIN t_user_activity tu ON t.id = tu.activity_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where t.id = #{userActivityId})
+		and a.id in (select user_id from t_user_activity tc inner join sys_user uc on tc.user_id = uc.id 
+			 where tc.activity_id = #{userActivityId} and tc.type='0' and uc.office_id = (select office_id from sys_user where id = #{id}))
+		AND a.id not in (SELECT
+			u.id
+		FROM
+			t_study_activity t
+		INNER JOIN t_user_activity tu ON t.id = tu.activity_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where t.id = #{userActivityId}
+		UNION all 
+		select create_by as id from t_user_activity_reg ureg where ureg.activity_id =  #{userActivityId} and ureg.audit_state = 1 
+		)
+		<if test="company != null and company.id != null and company.id != ''">
+			AND (c.id = #{company.id} OR c.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{company.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{company.id}, ',%'))</if>
+		</if>
+		<if test="office != null and office.id != null and office.id != ''">
+			AND (o.id = #{office.id} OR o.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{office.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{office.id}, ',%'))</if>
+		</if>
+		<!-- 如果不是超级管理员，则不显示超级管理员用户 -->
+		<if test="!currentUser.admin">
+			AND a.id != '1'
+		</if>
+		<if test="loginName != null and loginName != ''">
+			AND a.login_name like 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{loginName}, '%')</if>
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		<if test="officeType != null and officeType != ''">
+			and t.id = #{officeType}
+		</if>
+		
+		<if test="officeName != null and officeName != ''">
+			AND o.name like 
+					<if test="dbName == 'oracle'">'%'||#{officeName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{officeName}, '%')</if>
+		</if>
+		<if test="roleEnName != null and roleEnName != ''">
+			and r.enname = #{roleEnName}
+		</if>
+		
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<!-- 分页查询用户信息 -->
+	<select id="findAddCourseUserList" resultType="User">
+		SELECT
+			a.id,
+			a.name
+		FROM sys_user a
+		<include refid="userJoins"/>
+		<if test="role != null and role.id != null and role.id != ''">
+			JOIN sys_user_role ur ON ur.user_id = a.id AND ur.role_id = #{role.id}
+		</if>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} and r.enname !='teacher'
+		AND a.id not in (SELECT
+			u.id
+		FROM
+			t_course_info t
+		INNER JOIN t_user_course tu ON t.id = tu.course_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where t.id = #{userActivityId})
+		<if test="company != null and company.id != null and company.id != ''">
+			AND (c.id = #{company.id} OR c.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{company.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{company.id}, ',%'))</if>
+		</if>
+		<if test="office != null and office.id != null and office.id != ''">
+			AND (o.id = #{office.id} OR o.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{office.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{office.id}, ',%'))</if>
+		</if>
+		<!-- 如果不是超级管理员，则不显示超级管理员用户 -->
+		<if test="!currentUser.admin">
+			AND a.id != '1'
+		</if>
+		<if test="loginName != null and loginName != ''">
+			AND a.login_name like 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{loginName}, '%')</if>
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		<if test="officeType != null and officeType != ''">
+			and t.id = #{officeType}
+		</if>
+		
+		<if test="officeName != null and officeName != ''">
+			AND o.name like 
+					<if test="dbName == 'oracle'">'%'||#{officeName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{officeName}, '%')</if>
+		</if>
+		<if test="roleEnName != null and roleEnName != ''">
+			and r.enname = #{roleEnName}
+		</if>
+		
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 分页查询用户信息 -->
+	<select id="findAddCourseUserListForJgSystem" resultType="User">
+		SELECT
+			a.id,
+			a.name
+		FROM sys_user a
+		<include refid="userJoins"/>
+		<if test="role != null and role.id != null and role.id != ''">
+			JOIN sys_user_role ur ON ur.user_id = a.id AND ur.role_id = #{role.id}
+		</if>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		and a.id in (select user_id from t_user_course tc inner join sys_user uc on tc.user_id = uc.id 
+			 where tc.course_id = #{userActivityId} and tc.type='0' and uc.office_id = (select office_id from sys_user where id = #{id}))
+		AND a.id not in (SELECT
+			u.id
+		FROM
+			t_course_info t
+		INNER JOIN t_user_course tu ON t.id = tu.course_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where t.id = #{userActivityId}
+		UNION all 
+		select create_by as id from t_user_course_reg ureg where ureg.course_id =  #{userActivityId} and ureg.audit_state = 1 
+		)
+		
+		<if test="company != null and company.id != null and company.id != ''">
+			AND (c.id = #{company.id} OR c.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{company.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{company.id}, ',%'))</if>
+		</if>
+		<if test="office != null and office.id != null and office.id != ''">
+			AND (o.id = #{office.id} OR o.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{office.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{office.id}, ',%'))</if>
+		</if>
+		<!-- 如果不是超级管理员，则不显示超级管理员用户 -->
+		<if test="!currentUser.admin">
+			AND a.id != '1'
+		</if>
+		<if test="loginName != null and loginName != ''">
+			AND a.login_name like 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{loginName}, '%')</if>
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		<if test="officeType != null and officeType != ''">
+			and t.id = #{officeType}
+		</if>
+		
+		<if test="officeName != null and officeName != ''">
+			AND o.name like 
+					<if test="dbName == 'oracle'">'%'||#{officeName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{officeName}, '%')</if>
+		</if>
+		<if test="roleEnName != null and roleEnName != ''">
+			and r.enname = #{roleEnName}
+		</if>
+		
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据部门查询用户信息 -->
+	<select id="findListByOffice" resultType="User">
+		SELECT
+			<include refid="userColumns"/>
+		FROM sys_user a
+		<include refid="userJoins"/>
+
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="company != null and company.id != null and company.id != ''">
+			AND c.id = #{company.id} 
+		</if>
+		<if test="office != null and office.id != null and office.id != ''">
+			AND o.id = #{office.id} 
+		</if>
+		<if test="office == null">
+			AND (o.id = ''  or o.id is null)
+		</if>
+		
+		<if test="loginName != null and loginName != ''">
+			AND a.login_name like 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{loginName}, '%')</if>
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<!-- 排序 -->
+		ORDER BY  a.name
+	
+	</select>
+	
+	<!-- 根据OfficeId获取用户（树查询用户时用） -->
+	<select id="findUserByOfficeId" resultType="User" useCache="true">
+		SELECT
+			a.id, a.name, a.login_name
+		FROM sys_user a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.office_id = #{office.id}
+		ORDER BY a.name
+	</select>
+	
+	<!-- 查询全部用户 -->
+	<select id="findAllList" resultType="User">
+		SELECT
+			<include refid="userColumns"/>
+		FROM sys_user a
+		<include refid="userJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY c.code, o.code, a.name
+	</select>
+	
+	<!-- 查询全部用户数目 -->
+	<select id="findAllCount" resultType="long">
+		SELECT
+			COUNT(1)
+		FROM sys_user a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>
+	
+	<!-- 插入用户 -->
+	<insert id="insert">
+		INSERT INTO sys_user(
+			id, 
+			company_id, 
+			office_id, 
+			login_name, 
+			password, 
+			no, 
+			name, 
+			email, 
+			phone, 
+			mobile, 
+			user_type, 
+			create_by, 
+			create_date, 
+			update_by, 
+			update_date, 
+			remarks, 
+			login_flag, 
+			photo, 
+			qrcode,
+			del_flag,
+			id_num,
+			entry_date,
+			filing_date,
+			family_name
+		) VALUES (
+			#{id}, 
+			#{company.id}, 
+			#{officeId}, 
+			#{loginName}, 
+			#{password}, 
+			#{no}, 
+			#{name}, 
+			#{email}, 
+			#{phone}, 
+			#{mobile}, 
+			#{userType}, 
+			#{createBy.id}, 
+			#{createDate}, 
+			#{updateBy.id}, 
+			#{updateDate}, 
+			#{remarks}, 
+			#{loginFlag}, 
+			#{photo}, 
+			#{qrCode},
+			#{delFlag},
+			#{idNum},
+			#{entryDate},
+			#{filingDate},
+			#{familyName}
+		)
+	</insert>
+	
+	<!-- 更新用户 -->
+	<update id="update">
+		UPDATE sys_user SET 
+			company_id = #{company.id}, 
+			office_id = #{officeId}, 
+			login_name = #{loginName}, 
+			password = #{password}, 
+			no = #{no}, 
+			name = #{name}, 
+			email = #{email}, 
+			phone = #{phone}, 
+			mobile = #{mobile}, 
+			user_type = #{userType}, 
+			update_by = #{updateBy.id}, 
+			update_date = #{updateDate}, 
+			remarks = #{remarks},
+			login_flag = #{loginFlag},
+			photo = #{photo},
+			qrcode = #{qrCode},
+			id_num = #{idNum},
+			entry_date =#{entryDate},
+			filing_date =#{filingDate},
+			family_name =#{familyName}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 删除用户和角色关联表数据 -->
+	<delete id="deleteUserRole">
+		DELETE FROM sys_user_role WHERE user_id = #{id}
+	</delete>
+	
+	<!-- 插入用户和角色关联表数据 -->
+	<insert id="insertUserRole">
+		INSERT INTO sys_user_role(user_id, role_id)
+		<foreach collection="roleList" item="role" separator=" union all ">
+			SELECT #{id}, #{role.id} FROM dual
+		</foreach>
+	</insert>
+	
+	<!-- 更新用户信息  -->
+	<update id="updateUserInfo">
+		UPDATE sys_user SET 
+			name = #{name},
+			email = #{email}, 
+			phone = #{phone}, 
+			mobile = #{mobile}, 
+			update_by = #{updateBy.id}, 
+			update_date = #{updateDate}, 
+			remarks = #{remarks},
+			photo = #{photo},
+			qrcode = #{qrCode},
+			id_num = #{idNum},
+			entry_date =#{entryDate},
+			filing_date =#{filingDate},
+			family_name =#{familyName},
+			sex = #{sex}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 更新用户密码 -->
+	<update id="updatePasswordById">
+		UPDATE sys_user SET 
+			password = #{password} 
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 更新登录信息，如登录IP、登录时间 -->
+	<update id="updateLoginInfo">
+		UPDATE sys_user SET 
+			login_ip = #{loginIp}, 
+			login_Date = #{loginDate} 
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 物理删除用户 -->
+	<update id="delete">
+		DELETE FROM sys_user 
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 逻辑删除用户 -->
+	<update id="deleteByLogic">
+		UPDATE sys_user SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty"  resultType="User" statementType="STATEMENT">
+		select * from sys_user where ${propertyName} = '${value}'
+	</select>
+	<!-- 添加好友 -->
+	<insert id="insertFriend">
+		INSERT INTO sys_user_friend(
+			id, 
+			userId, 
+			friendId
+		) VALUES (
+			#{id}, 
+			#{userId}, 
+			#{friendId}
+		)
+	</insert>
+	
+	<!-- 根据用户id和好友id获取唯一记录 -->
+	<select id="findFriend" resultType="User">
+		SELECT
+			*
+		FROM sys_user a
+		LEFT JOIN sys_user_friend p ON p.userId = a.id
+		WHERE p.userId = #{userId} and p.friendId = #{friendId}
+	</select>
+	
+	<!-- 删除好友 -->
+	<select id="deleteFriend">
+		DELETE FROM sys_user_friend  WHERE userId = #{userId} and friendId = #{friendId}
+	</select>
+	
+		<!-- 查询我的好友列表 -->
+	<select id="findFriends"  resultType="User">
+		SELECT
+			<include refid="userColumns"/><!-- ,
+			ro.office_id AS "roleList.officeList.id" -->
+		FROM sys_user a
+		<include refid="userJoins"/>
+		LEFT JOIN sys_user_friend p ON p.friendId = a.id
+		WHERE  p.userId = #{id}
+	</select>
+	
+		<!-- 根据条件检索用户，添加到好友列表 -->
+	<select id="searchUsers"  resultType="User">
+		SELECT
+			<include refid="userColumns"/><!-- ,
+			ro.office_id AS "roleList.officeList.id" -->
+		FROM sys_user a
+	  	<include refid="userJoins"/>
+		<if test="name != null and name != ''">
+			WHERE  a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+	</select>
+			<!-- 根据条件检索用户，添加到好友列表 -->
+	<select id="findSelUser"  resultType="User">
+		SELECT
+			u.id AS "id",
+			u.name AS "name",
+			so.name AS "officeName",
+			ot.name as "officeTypeName"
+		FROM
+			sys_user u
+		INNER JOIN sys_user_role ur ON u.id = ur.user_id
+		INNER JOIN sys_role r ON r.id = ur.role_id
+		LEFT JOIN sys_office so ON u.office_id = so.id
+		LEFT join sys_office_type ot on so.office_type = ot.id
+		<if test="name != null and name != ''">
+			WHERE  a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		ORDER BY  u.name
+	</select>
+	
+	<select id="findJsUser"  resultType="User">
+		SELECT
+			u.id AS "id",
+			u.name AS "name",
+			so.name AS "officeName",
+			ot.name as "officeTypeName",pi.name AS "postName"
+		FROM
+			sys_user u
+		INNER JOIN sys_user_role ur ON u.id = ur.user_id
+		INNER JOIN sys_role r ON r.id = ur.role_id
+		LEFT JOIN sys_office so ON u.office_id = so.id
+		LEFT join sys_office_type ot on so.office_type = ot.id
+		LEFT JOIN sys_user_post up on up.user_id = u.id and up.is_default='1'
+		LEFT JOIN t_post_info pi on pi.id = up.post_id
+		WHERE r.enname ='teacher' and u.del_flag = 0
+		<if test="name != null and name != ''">
+			  u.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		<if test="createBy != null and createBy.id != null and createBy.id != ''">
+			 and u.id =#{createBy.id}
+		</if>
+		ORDER BY  u.name
+	</select>
+	
+	<select id="selectRoleByUserId" parameterType="map" resultType="Role">
+		select r.enname,r.id from sys_role r
+		INNER JOIN sys_user_role ur on ur.role_id = r.id
+		INNER JOIN sys_user su on su.id = ur.user_id
+		where su.id = #{userId}
+	</select>
+	
+	<select id="findSelectUser" resultType="SelectUser">	
+		SELECT
+		u.id,
+		u.name
+		FROM
+			sys_user u
+		INNER JOIN sys_office so ON u.office_id = so.id
+		inner join sys_office_type t on so.office_type = t.id
+		inner join sys_area a on a.id = so.area_id
+		inner join sys_user_role ur on ur.user_id = u.id 
+		inner join sys_role r on r.id = ur.role_id and r.enname = 'student'
+		left join sys_area a1 on a.parent_id = a1.id
+		left join sys_area a2 on a1.parent_id = a2.id
+		where u.del_flag =0
+		<if test="name != null and name != ''">
+			and u.name = #{name}
+		</if>
+		<if test="itmesIds != null">
+			and so.id in 
+			 <foreach item="item" index="index" collection="itmesIds" open="(" separator="," close=")">  
+				 #{item}
+			</foreach> 
+		</if>
+		<if test="officeLevel != null and officeLevel != ''">
+			and so.grade = #{grade}
+		</if>
+		<if test="areaId != null and areaId != ''">
+			and (a.id=#{areaId} or a1.id=#{areaId} or a2.id=#{areaId})
+		</if>
+		<if test="officeTypeId != null and officeTypeId != ''">
+			and t.id = #{officeTypeId}
+		</if>
+		<if test="officeTypeId != null and officeTypeId != ''">
+			and t.id = #{officeTypeId}
+		</if>
+		<if test="userIdsBx != null and userIdsBx != ''">
+			and u.id not in 
+			 <foreach item="item" index="index" collection="userIdsBx" open="(" separator="," close=")">  
+				 #{item}
+			</foreach> 
+		</if>
+	</select>
+	<select id="findListForOverOneThousandBx" resultType="SelectUser">
+		SELECT distinct u.id,u.name
+		FROM sys_user u
+		INNER JOIN sys_office so ON u.office_id = so.id
+		inner join sys_office_type t on so.office_type = t.id
+		inner join sys_area a on a.id = so.area_id
+		inner join sys_user_role ur on ur.user_id = u.id 
+		inner join sys_role r on r.id = ur.role_id and r.enname = 'student'
+		left join sys_area a1 on a.parent_id = a1.id
+		left join sys_area a2 on a1.parent_id = a2.id
+		LEFT JOIN sys_user_post up on up.user_id = u.id
+		where u.del_flag =0
+		<if test="name != null and name != ''">
+			and u.name = #{name}
+		</if>
+		<if test="(isCheckAll == null or isCheckAll =='') and officeIdBx != null and officeIdBx.length>0">
+			and  EXISTS (select st.search_cond from t_search_temp st where st.search_cond = so.id and st.type=1)
+		</if>
+		<if test="(isBxPostIdsCheckAll == null or isBxPostIdsCheckAll == '') and postIdsBx != null and postIdsBx.length>0">
+			and  EXISTS (select st.search_cond from t_search_temp st where st.search_cond = up.post_level and st.type=2)
+		</if>
+	</select>
+	<!-- 岗位不用考虑排除前面的数据 -->
+	<select id="findListForOverOneThousandXx" resultType="SelectUser">
+		SELECT distinct u.id,u.name
+		FROM sys_user u
+		INNER JOIN sys_office so ON u.office_id = so.id
+		inner join sys_office_type t on so.office_type = t.id
+		inner join sys_area a on a.id = so.area_id
+		inner join sys_user_role ur on ur.user_id = u.id 
+		inner join sys_role r on r.id = ur.role_id and r.enname = 'student'
+		left join sys_area a1 on a.parent_id = a1.id
+		left join sys_area a2 on a1.parent_id = a2.id
+		LEFT JOIN sys_user_post up on up.user_id = u.id
+		where u.del_flag =0
+		<if test="name != null and name != ''">
+			and u.name = #{name}
+		</if>
+		<!-- 选学这块需要从必选中排除掉之前的组织信息，这块的查询判断可能会有一些问题 -->
+		 <if test="officeIdsxx != null and officeIdsxx.length>0">
+			and  EXISTS (select st.search_cond from t_search_temp st where st.search_cond = so.id and st.type=1)
+		</if>
+		<if test="(isXxPostIdsCheckAll==null or isXxPostIdsCheckAll=='') and postIdsXx != null and postIdsXx.length>0">
+			and  EXISTS (select st.search_cond from t_search_temp st where st.search_cond = up.post_level and st.type=2)
+		</if>
+		<if test="userIdsBx != null and userIdsBx.length>0">
+			and not EXISTS (select st.search_cond from t_search_temp st where st.search_cond = u.id and st.type=3)
+		</if>
+	</select>
+	
+	<!-- 添加默认角色 -->
+	<insert id="insertRole" parameterType="map">
+		INSERT INTO sys_user_role(
+			user_id, 
+			role_id
+		) VALUES (
+			#{userId}, 
+			#{roleId}
+		)
+	</insert>
+	
+	<!-- 岗位不用考虑排除前面的数据
+			inner join sys_user_role ur on ur.user_id = u.id 
+			inner join sys_role r on r.id = ur.role_id and r.enname = 'student'
+	 -->
+	<select id="findListForOfficeAndPost" resultType="SelectUser" parameterType="selectUser">
+		SELECT distinct u.id,u.name
+			FROM sys_user u
+			INNER JOIN sys_office so ON u.office_id = so.id
+			INNER JOIN sys_office_type t on so.office_type = t.id
+			INNER JOIN sys_user_post up on up.user_id = u.id
+			INNER JOIN sys_user_role ur on u.id = ur.user_id
+			INNER JOIN  sys_role r on ur.role_id = r.id  
+			where u.del_flag =0 and r.enname !='teacher'
+			and EXISTS (select 1 from t_office_activity where office_id = so.id and activity_id = #{activityId} and type=#{searchType})
+			and EXISTS (select 1 from t_post_activity where post_id = post_level and activity_id =#{activityId} and type=#{searchType})
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				 and u.id =#{createBy.id}
+			</if>
+	</select>
+	
+	<select id="findListForOfficeAndPostCourse" resultType="SelectUser" parameterType="selectUser">
+			SELECT distinct u.id,u.name
+			FROM sys_user u
+			INNER JOIN sys_office so ON u.office_id = so.id
+			INNER JOIN sys_office_type t on so.office_type = t.id
+			INNER JOIN sys_user_post up on up.user_id = u.id
+			INNER JOIN sys_user_role ur on u.id = ur.user_id
+			INNER JOIN  sys_role r on ur.role_id = r.id  
+			where u.del_flag =0 and r.enname !='teacher'
+			and EXISTS (select 1 from t_office_course where office_id = so.id and course_id = #{courseId} and type=#{searchType})
+			and EXISTS (select 1 from t_post_course where post_id = post_level and course_id =#{courseId} and type=#{searchType})
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				 and u.id =#{createBy.id}
+			</if>
+	</select>
+	<select id="findListByUser"  resultType="User">
+		select * from sys_user u where u.del_flag =0
+		<if test="idNum != null and idNum != ''">
+			 and u.id_num = #{idNum}
+		</if>
+		<if test="id != null and id != ''">
+			 and u.id = #{id}
+		</if>
+		<if test="email != null and email != ''">
+			 and u.email = #{email}
+		</if>
+		<if test="phone != null and phone != ''">
+			 and u.phone = #{phone}
+		</if>
+	</select>
+	
+	<update id="updateUserVerifyUrlById" parameterType="User">
+		UPDATE sys_user SET verifyUrl = #{verifyUrl} 
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findMenuDaiSh"  resultType="Map">
+select * from(select '课程管理' as menuName,count(t.id) as count from t_course_info t left join t_approval_record a on t.id = a.resource_id
+			where t.del_flag = 0 and a.`status` is null
+			group by menuName 
+			UNION all 
+			select '学习资源' as menuName,count(t.id) as count from t_resource_info t left join t_approval_record a on t.id = a.resource_id
+			where t.del_flag = 0 and a.`status` is null
+			group by menuName
+			UNION all 
+			select '学习活动' as menuName,count(t.id) as count from t_study_activity t left join t_approval_record a on t.id = a.resource_id
+			where t.del_flag = 0 and a.`status` is null
+			group by menuName
+			UNION all 
+			select '资料管理' as menuName,count(t.id) as count from t_mesan_info t left join t_approval_record a on t.id = a.resource_id
+			where t.del_flag = 0 and a.`status` is null 	group by menuName
+			) a
+	</select>
+	
+	<update id="updateUserScore" parameterType="User">
+		update t_user_score set score=#{score} where user_id=#{userId}
+	</update>
+	<insert id="addUserScore" parameterType="User">
+		insert into t_user_score (id,user_id,score) values (#{userId},#{userId},1)
+	</insert>
+	<select id="getUserScore" resultType="User">
+		select sum(score) as gradeScore from t_mesan_mark where user_id=#{userId}
+	</select>
+	<select id="getUserGradeName" resultType="User">
+		select grade_name as gradeName from t_user_grade where end_score &gt;= #{gradeScore} and start_score &lt;= #{gradeScore}
+	</select>	
+</mapper>

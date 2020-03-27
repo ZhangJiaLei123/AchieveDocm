@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.PostActivityDao">
+    
+	<sql id="postActivityColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.post_id AS "postId",
+		a.activity_id AS "activityId",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="postActivityJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="PostActivity" >
+		SELECT 
+			<include refid="postActivityColumns"/>
+		FROM t_post_activity a
+		<include refid="postActivityJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="PostActivity" >
+		SELECT 
+			<include refid="postActivityColumns"/>
+		FROM t_post_activity a
+		<include refid="postActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="postId != null and postId != ''">
+				AND a.post_id = #{postId}
+			</if>
+			<if test="activityId != null and activityId != ''">
+				AND a.activity_id = #{activityId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="PostActivity" >
+		SELECT 
+			<include refid="postActivityColumns"/>
+		FROM t_post_activity a
+		<include refid="postActivityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_post_activity(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			post_id,
+			activity_id,
+			type
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{postId},
+			#{activityId},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_post_activity SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			post_id = #{postId},
+			activity_id = #{activityId},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_post_activity
+		WHERE id = #{id}
+	</update>
+		<!--删除岗位活动关系-->
+	<update id="deletePostActivityByActivId">
+		DELETE FROM t_post_activity
+		WHERE activity_id = #{activId}
+		<if test="type !=null and type != ''">
+			and type = #{type}
+		</if>
+	</update>
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_post_activity SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="PostActivity" statementType="STATEMENT">
+		select * FROM t_post_activity  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="showPostActiveList" resultType="PostActivity">
+		SELECT
+			pi. NAME AS postName,
+			pl.id AS id,
+			pl. NAME AS postLevelName
+		FROM
+			t_study_activity a
+		INNER JOIN t_post_activity pc ON a.id = pc.activity_id
+		INNER JOIN t_post_level pl ON pc.post_id = pl.id
+		INNER JOIN t_post_info pi ON pi.id = pl.postinfo_id
+		where a.id = #{activityId} and pc.type =#{type}
+	</select>
+</mapper>

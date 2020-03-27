@@ -1,0 +1,85 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ include file="/webpage/include/taglib.jsp"%>
+<!DOCTYPE>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>选择机构</title>
+<script src="${pageContext.request.contextPath}/js/jquery-1.12.4.min.js"></script>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/js/zTree/css/demo.css" type="text/css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/js/zTree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+<script type="text/javascript" src="${pageContext.request.contextPath}/js/zTree/js/jquery.ztree.core.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath}/js/zTree/js/jquery.ztree.excheck.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath}/js/zTree/js/jquery.ztree.exhide.js"></script>
+</head>
+<SCRIPT type="text/javascript">
+		var setting = {
+			check: {
+				enable: true,
+				chkStyle: "radio",
+				chkboxType:{ "Y": "s", "N": "s" },
+				radioType: "all"
+			},
+			data: {
+				key: {
+					title: "title"
+				},
+				simpleData: {
+					enable: true
+				}
+			},
+			callback: {
+				
+			}
+		};
+		
+		$(document).ready(function(){
+			var zNodes = "";
+			$.ajax({
+		        async: false,
+		        url: "${ctx}/sys/officeType/findTreeOffice",
+		        dataType: "json",
+		        success: function (data) {
+		        	zNodes = data;
+		        }
+			});
+			$.fn.zTree.init($("#treeDemo"), setting,zNodes);
+			//
+			$("#city_1").citySelect({
+				nodata:"none",
+				required:false
+			}); 
+			openNode(node.getParentNode());
+		});
+		function getValue(){
+			var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+			var checkObj = zTree.getCheckedNodes(true);
+		
+			if(checkObj==0){
+				window.parent.setValue('','');
+				return ;
+			}
+			checkObj = checkObj[0];
+			window.parent.setValue(checkObj['id'],checkObj['name']);
+		}
+		function openNode(node){
+			if(node){
+				node.open= true;
+				if(node.parentTId != null){
+					openNode(node.getParentNode());
+				}
+			}
+		}
+	</SCRIPT>
+<body>
+<div class="content_wrap">
+	<div class="zTreeDemoBackground left">
+		<ul id="treeDemo" class="ztree"></ul>
+	</div>
+</div>
+<!-- <div style="width:200px;margin-top:20px;text-align: center"> -->
+<!-- 	<input type="button" onClick="getValue()" value="确定"> -->
+<!-- </div> -->
+</body>
+</html>

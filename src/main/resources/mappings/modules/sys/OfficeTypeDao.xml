@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.dao.OfficeTypeDao">
+    
+	<sql id="officeTypeColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.parent_id AS "parentId",
+		a.parent_ids AS "parentIds",
+		t.name AS "parent.name",
+		t.id AS "parent.id"
+	</sql>
+	
+	<sql id="officeTypeJoins">
+		LEFT JOIN sys_office_type t 
+		on a.parent_id = t.id
+	</sql>
+	
+    
+	<select id="get" resultType="OfficeType" >
+		SELECT 
+			<include refid="officeTypeColumns"/>
+		FROM sys_office_type a
+		<include refid="officeTypeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OfficeType" >
+		SELECT 
+			<include refid="officeTypeColumns"/>
+		FROM sys_office_type a
+		<include refid="officeTypeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name = #{name}
+			</if>
+			<if test="parentId != null and parentId != ''">
+				AND a.parent_id = #{parentId}
+			</if>
+			<if test="updateDataId != null and updateDataId != ''">
+				and a.id != #{updateDataId} and a.id not in(SELECT id FROM sys_office_type  WHERE FIND_IN_SET(id,getOfficeTypeChildList(#{updateDataId})))
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OfficeType" >
+		SELECT 
+			<include refid="officeTypeColumns"/>
+		FROM sys_office_type a
+		<include refid="officeTypeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_office_type(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			name,
+			parent_id,
+			parent_ids
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{name},
+			#{parentId},
+			#{parentIds}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_office_type SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			name = #{name},
+			parent_id = #{parentId},
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_office_type
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_office_type SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OfficeType" statementType="STATEMENT">
+		select * FROM sys_office_type  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 查询分类下的子集 -->
+	<select id="findChildrenOfficeType" resultType="OfficeType" >
+		SELECT 
+			<include refid="officeTypeColumns"/>
+		FROM sys_office_type a
+		<include refid="officeTypeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and a.parent_id = #{id}
+		</where>	
+	</select>
+	
+	<!-- 查询分类下的子集 -->
+	<select id="findOfficeByTypeId" resultType="Map" >
+		select o.* from sys_office_type a inner join sys_office o on a.id = o.office_type
+		where a.id = #{typeId} and o.del_flag = 0
+	</select>
+	<!-- 查询组织类别树 -->
+	<select id="findTreeOffice" resultType="Map">	
+	SELECT
+		t.id,
+		t. NAME as name,
+		t.parent_id as pId ,if(count(ot.id)>0,'true','false') as nocheck from sys_office_type t
+		LEFT JOIN  sys_office_type ot ON t.id = ot.parent_id
+		where t.del_flag =0
+		group by t.id,
+			t. NAME,
+			t.parent_id
+	</select>
+	
+</mapper>

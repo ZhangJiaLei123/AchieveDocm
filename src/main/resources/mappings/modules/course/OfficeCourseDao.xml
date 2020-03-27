@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.OfficeCourseDao">
+    
+	<sql id="officeCourseColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.office_id AS "officeId",
+		a.course_id AS "courseId",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="officeCourseJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="OfficeCourse" >
+		SELECT 
+			<include refid="officeCourseColumns"/>
+		FROM t_office_course a
+		<include refid="officeCourseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OfficeCourse" >
+		SELECT 
+			<include refid="officeCourseColumns"/>
+		FROM t_office_course a
+		<include refid="officeCourseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="officeId != null and officeId != ''">
+				AND a.office_id = #{officeId}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OfficeCourse" >
+		SELECT 
+			<include refid="officeCourseColumns"/>
+		FROM t_office_course a
+		<include refid="officeCourseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_office_course(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			office_id,
+			course_id,
+			type
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{officeId},
+			#{courseId},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_office_course SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			office_id = #{officeId},
+			course_id = #{courseId},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_office_course
+		WHERE id = #{id}
+	</update>
+	
+		<!--物理删除-->
+	<update id="deleteOfficeCourseByCourseId">
+		DELETE FROM t_office_course
+		WHERE course_id = #{courseId} and type=#{type}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_office_course SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OfficeCourse" statementType="STATEMENT">
+		select * FROM t_office_course  where ${propertyName} = '${value}'
+	</select>
+	<select id="findOfficeCourse" resultType="OfficeCourse" >
+		SELECT
+			a.id,
+			a.cou_name AS "name",
+			s. NAME AS "officeName",
+			p. NAME AS "officeTypeName",
+			s.grade AS "officeGrade",
+			ar. NAME AS "sq",
+			par. NAME AS "sf",
+			ppar. NAME AS "dq"
+		FROM
+			t_course_info a
+		INNER JOIN t_office_course t ON a.id = t.course_id
+		INNER JOIN sys_office s ON s.id = t.office_id
+		INNER JOIN sys_office_type p ON p.id = s.office_type
+		INNER JOIN sys_area ar ON ar.id = s.area_id
+		INNER JOIN sys_area par ON ar.parent_id = par.id
+		INNER JOIN sys_area ppar ON par.parent_id = ppar.id
+		WHERE a.id = #{courseId}
+		<if test="type != null and type != ''">
+				AND t.type = #{type}
+		</if>	
+		
+		
+	</select>
+	
+</mapper>

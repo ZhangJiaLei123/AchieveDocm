@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.SearchTempDao">
+	<insert id="insert">
+		INSERT INTO t_search_temp(
+			search_cond,type
+		) VALUES 
+		 <foreach collection ="list" item="map" index= "index" separator =",">
+		(
+			#{map.searchCond},#{map.type}
+		)
+		</foreach>
+	</insert>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_search_temp
+	</update>
+</mapper>

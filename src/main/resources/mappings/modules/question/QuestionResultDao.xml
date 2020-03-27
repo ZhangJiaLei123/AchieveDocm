@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.question.dao.QuestionResultDao">
+    
+	<sql id="questionResultColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.release_id AS "releaseId",
+		a.problem_id AS "problemId",
+		a.user_id AS "userId",
+		a.res_answer AS "resAnswer",
+		a.activity_dir_id AS "activityDirId"
+	</sql>
+	
+	<sql id="questionResultJoins">
+	</sql>
+	<sql id="questionResultJoinsUser">
+	LEFT JOIN sys_user b ON a.create_by=b.id
+	</sql>
+	
+    
+	<select id="get" resultType="QuestionResult" >
+		SELECT 
+			<include refid="questionResultColumns"/>
+		FROM t_question_result a
+		<include refid="questionResultJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+		    <if test="releaseId != null and releaseId != ''">
+				AND a.release_id = #{releaseId}
+			</if>
+			<if test="problemId != null and problemId != ''">
+				AND a.problem_id = #{problemId}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="activityDirId != null and activityDirId != ''">
+				AND a.activity_dir_id = #{activityDirId}
+			</if>
+	</select>
+	
+	<select id="findList" resultType="QuestionResult" >
+		SELECT 
+			<include refid="questionResultColumns"/>
+			,b.name as "userName"
+		FROM t_question_result a
+		<include refid="questionResultJoins"/>
+		<include refid="questionResultJoinsUser"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="releaseId != null and releaseId != ''">
+				AND a.release_id = #{releaseId}
+			</if>
+			<if test="problemId != null and problemId != ''">
+				AND a.problem_id = #{problemId}
+			</if>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="activityDirId != null and activityDirId != ''">
+				AND a.activity_dir_id = #{activityDirId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="QuestionResult" >
+		SELECT 
+			<include refid="questionResultColumns"/>
+		FROM t_question_result a
+		<include refid="questionResultJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_question_result(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			release_id,
+			problem_id,
+			user_id,
+			res_answer,
+			activity_dir_id
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{releaseId},
+			#{problemId},
+			#{userId},
+			#{resAnswer},
+			#{activityDirId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_question_result SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			release_id = #{releaseId},
+			problem_id = #{problemId},
+			user_id = #{userId},
+			res_answer = #{resAnswer},
+			activity_dir_id = #{activityDirId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_question_result
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_question_result SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="QuestionResult" statementType="STATEMENT">
+		select <include refid="questionResultColumns"/>
+		,b.name as "userName"
+		FROM t_question_result  a
+		<include refid="questionResultJoinsUser"/>
+		where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 得到每个人关于一个发布的信息 -->
+	<select id="findPageGroupRid" resultType="QuestionResult" >
+		SELECT 
+			<include refid="questionResultColumns"/>
+			,b.name as "userName"
+		FROM t_question_result a
+		<include refid="questionResultJoins"/>
+		<include refid="questionResultJoinsUser"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and a.release_id= #{releaseId}
+		</where>
+		group by a.create_by
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

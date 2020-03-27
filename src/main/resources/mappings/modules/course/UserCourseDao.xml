@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.course.dao.UserCourseDao">
+    
+	<sql id="userCourseColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.user_id AS "userId",
+		a.course_id AS "courseId",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="userCourseJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="UserCourse" >
+		SELECT 
+			<include refid="userCourseColumns"/>
+		FROM t_user_course a
+		<include refid="userCourseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+			 AND a.id = #{id}
+			 </if>
+			 <if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+	    </where>
+	</select>
+	
+	<select id="findList" resultType="UserCourse" >
+		SELECT 
+			<include refid="userCourseColumns"/>
+		FROM t_user_course a
+		<include refid="userCourseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UserCourse" >
+		SELECT 
+			<include refid="userCourseColumns"/>
+		FROM t_user_course a
+		<include refid="userCourseJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_user_course(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			course_id,
+			type
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{userId},
+			#{courseId},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_user_course SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			user_id = #{userId},
+			course_id = #{courseId},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_user_course
+		WHERE id = #{id}
+	</update>
+		<!--物理删除-->
+	<update id="deleteById">
+		DELETE FROM t_user_course
+		WHERE id = #{id}
+	</update>
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_user_course SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<!--根据课程ID删除-->
+	<update id="deleteUserCourseByCourID">
+		delete from t_user_course
+		WHERE course_id = #{courseId} and type=#{type}
+		<if test="userId !=null and userId != ''">
+			and user_id = #{userId}
+		</if>
+	</update>
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="UserCourse" statementType="STATEMENT">
+		select * FROM t_user_course  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findUserCourse" resultType="UserCourse">
+		SELECT
+			a.id,
+			su.NAME AS userName,
+			so.NAME AS officeName,
+			tp.name AS postName
+		FROM
+			t_course_info a
+		INNER JOIN t_user_course uc ON a.id = uc.course_id
+		INNER JOIN sys_user su ON uc.user_id = su.id
+		INNER JOIN sys_office so ON su.office_id = so.id
+		INNER JOIN sys_user_post up on up.user_id = su.id and up.is_default =1
+		inner join t_post_info tp on tp.id = up.post_id
+		where a.id =#{courseId}
+		<if test="type != null and type != ''">
+				AND uc.type = #{type}
+		</if>
+		<if test="userName != null and userName != ''">
+				AND su.name like
+				<if test="dbName == 'mysql'">CONCAT('%', #{userName}, '%')</if>
+		</if>
+	</select>
+	
+	<select id="findUserCourseInfoList" resultType="UserCourse">
+		SELECT 
+			<include refid="userCourseColumns"/>
+			,su.NAME AS userName,
+			so.NAME AS officeName
+		FROM t_user_course a
+		INNER JOIN sys_user su ON a.user_id = su.id
+		INNER JOIN sys_office so ON su.office_id = so.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 查看课程查询必学人员组织 -->
+	<select id="findOfficeListMap" resultType="UserCourse">
+		SELECT	
+		s.id,
+		s.name as officeName
+		FROM
+			t_course_info t
+		INNER JOIN t_office_course o ON t.id = o.course_id and o.type =#{type}
+		inner JOIN  sys_office s on s.id = o.office_id
+		where t.id = #{courseId}
+	</select>
+		<!-- 查看课程查询必学人员组织类别 -->
+	<select id="findUserOfficeTypeCount" resultType="Integer">
+	SELECT count(1) from (
+		SELECT
+		DISTINCT	
+		st.id
+		FROM
+			t_course_info t
+		INNER JOIN t_office_course o ON t.id = o.course_id and o.type =#{type}
+		inner JOIN  sys_office s on s.id = o.office_id
+		LEFT JOIN sys_office_type st on s.office_type = st.id
+		where t.id = #{courseId}
+		)a 
+	</select>
+	
+	<!-- 查看课程查询必学人员 -->
+	<select id="findUserCount" resultType="Integer">
+	
+		select count(1) from (
+		SELECT
+		DISTINCT	
+		u.id
+		FROM
+			t_course_info t
+		INNER JOIN t_office_course o ON t.id = o.course_id and o.type =#{type}
+		inner JOIN  sys_office s on s.id = o.office_id
+		inner join sys_user u on u.office_id = s.id
+		where t.id = #{courseId}
+		)a
+	</select>
+	
+	<select id ="findUserByOfficeId" resultType="Map">
+	select u.id,u.name from sys_user u inner join sys_office o on u.office_id = o.id
+		where o.id =#{officeId} and u.del_flag = 0 order by u.name
+	</select>
+	<!-- 教师端课程管理 学员管理-->
+	<select id="findUserList"  resultType="User">
+		select t.*,
+			ts.xxCount,
+			ts.xxTime
+	 from ((SELECT
+			tu.id,
+			u. NAME,
+			u.id as userID,
+			o. NAME AS officeName
+		FROM
+			t_course_info t
+		INNER JOIN t_user_course tu ON t.id = tu.course_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where  t.id = #{officeId}
+		)
+		union all
+		(
+		SELECT
+					t.id,
+					u. NAME,
+					u.id as userID,
+					o. NAME AS officeName
+				FROM
+					t_user_course_reg t
+				INNER JOIN sys_user u ON t.create_by = u.id
+				INNER JOIN sys_office o ON o.id = u.office_id
+					where t.course_id = #{officeId} and  t.audit_state = 1
+		)
+		)t LEFT JOIN (select SUM(UNIX_TIMESTAMP(ts.end_time)-UNIX_TIMESTAMP(ts.start_time)) as  xxTime ,count(course_id) as xxCount, user_id from t_study_record ts WHERE  ts.course_id =   #{officeId} 
+group by user_id)ts on t.userID = ts.user_id  
+		
+		<if test="name != null and name != ''">
+				where t.name LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{name}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		group by userID order by name desc
+	</select>
+	
+	
+	<!-- 机构管理员 学员管理-->
+	<select id="findUserListForJgSystem"  resultType="User">
+		select t.*,
+			count(ts.id) as xxCount,
+			SUM(ts.end_time-ts.start_time) as xxTime
+	 from ((SELECT
+			tu.id,
+			u. NAME,
+			u.id as userID,
+			o. NAME AS officeName
+		FROM
+			t_course_info t
+		INNER JOIN t_user_course tu ON t.id = tu.course_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where  t.id = #{officeId} and o.id in (select office_id from sys_user where id = #{id})
+		)
+		union all
+		(
+		SELECT
+					t.id,
+					u. NAME,
+					u.id as userID,
+					o. NAME AS officeName
+				FROM
+					t_user_course_reg t
+				INNER JOIN sys_user u ON t.create_by = u.id
+				INNER JOIN sys_office o ON o.id = u.office_id
+					where t.course_id = #{officeId} and  t.audit_state = 1
+				and o.id in (select office_id from sys_user where id = #{id})
+		)
+		)t LEFT JOIN t_study_record ts on t.userID = ts.user_id and ts.course_id =   #{officeId} 
+		
+		<if test="name != null and name != ''">
+				where t.name LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{name}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+		group by userID order by name desc
+	</select>
+	
+	<!-- 课程报名审批列表 -->
+		<select id="findBmUserList"  resultType="User">
+		SELECT
+			t.id,
+			u. NAME,
+			o. NAME AS officeName,
+			t.create_date as "createDate",
+			t.audit_state as shStatus
+		FROM
+			t_user_course_reg t
+		INNER JOIN sys_user u ON t.create_by = u.id
+		INNER JOIN sys_office o ON o.id = u.office_id
+		where t.course_id = #{officeId}
+		<if test="name != null and name != ''">
+				AND u.name LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{name}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if> 
+		<if test="shStatus != null and shStatus != ''">
+				AND t.audit_state =#{shStatus} 
+		</if> 
+		order by t.audit_state  asc 
+	</select>
+	
+	<insert id="saveBatch">
+		INSERT INTO t_user_course(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			user_id,
+			course_id,
+			type
+		) VALUES 
+		  <foreach collection ="list" item="uc" index= "index" separator =",">
+		  (
+			#{uc.id},
+			#{uc.createBy.id},
+			#{uc.createDate},
+			#{uc.updateBy.id},
+			#{uc.updateDate},
+			#{uc.remarks},
+			#{uc.delFlag},
+			#{uc.userId},
+			#{uc.courseId},
+			#{uc.type}
+		)
+		</foreach>
+	</insert>
+	<!-- 根据课程id获取所有人数 -->
+	<select id="getTotalCountByCourseId" resultType="Integer">
+	
+		select count(1) from (
+		select * from ((SELECT
+			tu.id,
+			u. NAME,
+			o. NAME AS officeName
+		FROM
+			t_course_info t
+		INNER JOIN t_user_course tu ON t.id = tu.course_id and tu.type =1
+		INNER JOIN sys_user u ON u.id = tu.user_id
+		INNER JOIN sys_office o ON u.office_id = o.id
+		where  t.id = #{courseId}
+		)
+		union all
+		(
+		SELECT
+					t.id,
+					u. NAME,
+					o. NAME AS officeName
+				FROM
+					t_user_course_reg t
+				INNER JOIN sys_user u ON t.create_by = u.id
+				INNER JOIN sys_office o ON o.id = u.office_id
+					where t.course_id = #{courseId} and  t.audit_state = 1
+		)
+		)t
+		)a
+	</select>
+	
+	<update id="deleteByUserIdAndCourseId">
+		DELETE FROM t_user_course
+		WHERE user_id = #{userId}
+		AND
+		course_id = #{courseId}
+	</update>
+	
+	
+	<select id="findListByEndTime" resultType="UserCourse" >
+		<!-- 查询还能学习的状态 -->
+		SELECT
+		* from
+		(SELECT 
+			<include refid="userCourseColumns"/>
+		FROM t_user_course a
+		<include refid="userCourseJoins"/>
+		LEFT JOIN t_course_info b 
+        ON a.course_id = b.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND b.cou_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{searchContent}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{searchContent}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{searchContent},'%')</if>
+			</if>
+			AND b.stu_end_time &gt; DATE_SUB(CURDATE(),INTERVAL 1 DAY)
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY b.stu_start_time DESC, b.create_date DESC
+			</otherwise>
+		</choose>) aaaaaa
+		<!-- 查询不能学习的状态 --> UNION ALL
+		SELECT 
+		* from
+		(
+		SELECT 
+			<include refid="userCourseColumns"/>
+		FROM t_user_course a
+		<include refid="userCourseJoins"/>
+		LEFT JOIN t_course_info b 
+        ON a.course_id = b.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="courseId != null and courseId != ''">
+				AND a.course_id = #{courseId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND b.cou_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{searchContent}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{searchContent}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{searchContent},'%')</if>
+			</if>
+			AND b.stu_end_time &lt;= DATE_SUB(CURDATE(),INTERVAL 1 DAY)
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY b.stu_start_time DESC, b.create_date DESC
+			</otherwise>
+		</choose>)  bbbbbb
+	</select>
+</mapper>

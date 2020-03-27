@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.train.dao.TrainProgramDao">
+    
+	<sql id="trainProgramColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		u.name AS "createBy.name",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.pro_name AS "proName",
+		a.pro_type AS "proType",
+		a.gz_start_time AS "gzStartTime",
+		a.gz_end_time AS "gzEndTime",
+		a.pro_release AS "proRelease",
+		a.is_createadmin as "isCreateAdmin",
+		r.status AS "status"
+	</sql>
+	
+	<sql id="trainProgramJoins">
+		left join sys_user u on u.id = a.create_by
+		LEFT JOIN t_approval_record r on a.id = r.resource_id
+	</sql>
+    
+	<select id="get" resultType="TrainProgram" >
+		SELECT 
+			<include refid="trainProgramColumns"/>
+		FROM t_train_program a
+		<include refid="trainProgramJoins"/>
+		WHERE a.del_flag = '0'
+		AND a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TrainProgram" >
+		SELECT 
+			<include refid="trainProgramColumns"/>
+		FROM t_train_program a
+		<include refid="trainProgramJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="remarks != null and remarks != ''">
+				AND a.remarks = #{remarks}
+			</if>
+			<if test="proName != null and proName != ''">
+				AND a.pro_name like
+				<if test="dbName == 'mysql'"> CONCAT('%',#{proName},'%')</if>
+			</if>
+			<if test="proType != null and proType != ''">
+				AND a.pro_type = #{proType}
+			</if>
+			<if test="gzStartTime != null and gzStartTime != ''">
+				AND a.gz_start_time = #{gzStartTime}
+			</if>
+			<if test="gzEndTime != null and gzEndTime != ''">
+				AND a.gz_end_time = #{gzEndTime}
+			</if>
+			<if test="proRelease != null and proRelease != ''">
+				AND a.pro_release = #{proRelease}
+			</if>
+			<if test="status != null and status != ''">
+				AND r.status = #{status}
+			</if>
+			<if test="listTrainProgramIds != null and listTrainProgramIds.size()>0">
+			    AND a.id in
+				<foreach  item="item" collection="listTrainProgramIds" index="index"  open="(" separator="," close=")">
+				#{item}
+				</foreach>
+			</if>
+			${sqlMap.dataScopeFileForOffice}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TrainProgram" >
+		SELECT 
+			<include refid="trainProgramColumns"/>
+		FROM t_train_program a
+		<include refid="trainProgramJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO t_train_program(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			pro_name,
+			pro_type,
+			gz_start_time,
+			gz_end_time,
+			pro_release,
+			status,
+			is_createadmin
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{proName},
+			#{proType},
+			#{gzStartTime},
+			#{gzEndTime},
+			#{proRelease},
+			#{status},
+			#{isCreateAdmin}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE t_train_program SET 	
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			pro_name = #{proName},
+			pro_type = #{proType},
+			gz_start_time = #{gzStartTime},
+			gz_end_time = #{gzEndTime},
+			pro_release = #{proRelease},
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM t_train_program
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE t_train_program SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="TrainProgram" statementType="STATEMENT">
+		select * FROM t_train_program  where ${propertyName} = '${value}'
+	</select>
+	<!-- 发布培训计划 -->
+	<!--逻辑删除-->
+	<update id="updateRelease">
+		UPDATE t_train_program SET 
+			pro_release = 0
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

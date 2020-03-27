@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="ajax,jquery,省市联动" />
+<meta name="description" content="Helloweba演示平台，演示XHTML、CSS、jquery、PHP案例和示例" />
+<title>基于jQuery+JSON的省市联动效果</title>
+<link rel="stylesheet" type="text/css" href="../css/main.css" />
+<style type="text/css">
+.demo{width:80%; margin:20px auto}
+.demo h3{height:32px; line-height:32px}
+.demo p{line-height:24px}
+pre{margin-top:10px; padding:6px; background:#f7f7f7}
+</style>
+<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="js/jsAddress.js"></script>
+<script type="text/javascript">
+	$(document).ready(function() {	
+		addressInit('cmbProvince', 'cmbCity', 'cmbArea'); 
+	});
+</script>
+</head>
+<body>
+		<select id="cmbProvince" name="cmbProvince"></select>  
+         <select id="cmbCity" name="cmbCity"></select>
+<!--          <select id="cmbArea" name="cmbArea"></select> -->
+         
+</body>
+</html>

@@ -1,0 +1,201 @@
+@charset "utf-8";
+/* CSS Document */
+/** 清除内外边距 **/
+body, h1, h2, h3, h4, h5, h6, hr, p,
+blockquote, /* structural elements 结构元素 */
+dl, dt, dd, ul, ol, li, /* list elements 列表元素 */
+pre, /* text formatting elements 文本格式元素 */
+form, fieldset, legend, button, input, textarea, /* form elements 表单元素 */
+th, td, /* table elements 表格元素 */
+img/* img elements 图片元素 */{
+  border:medium none;
+  margin:0;
+  padding:0;
+}
+/** 设置默认字体 **/
+body, button, input, select, textarea{
+  font:14px/1'微软雅黑', tahoma,Srial, helvetica,sans-serif;
+}
+h1, h2, h3, h4, h5, h6{font-size:100%;}
+em{font-style:normal;}
+/** 重置列表元素 **/
+ul, ol{list-style:none;}
+/** 重置超链接元素 **/
+a{text-decoration:none; color:inherit;}
+a:hover{text-decoration:none; color:inherit;}
+/** 重置图片元素 **/
+img{border:0px;}
+/** 重置表格元素 **/
+table{border-collapse:collapse; border-spacing:0;}
+/** 清除表单框子 **/
+input, textarea{outline:none;}
+
+/** 载入网页字体 **/
+@font-face {
+	font-family: 'mnewsmpro';
+	src: url('../font/a-otf-mnewsmpro-light.eot') format('eot');
+	src: url('../font/a-otf-mnewsmpro-light.otf'), url('../font/a-otf-mnewsmpro-light.ttf'), url('../font/a-otf-mnewsmpro-light.woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.fl{float:left;}
+.fr{float:right;}
+.of{overflow:hidden;}
+.tl{text-align:left;}
+.tc{text-align:center;}
+.tr{text-align:right;}
+.fwb{font-weight:bold;}
+
+
+.black{
+	color:#000000;
+}
+/** 设置清除浮动的元素 **/
+ul:after,.clear:after{
+	content:"";
+	display:block;
+	visibility:hidden;
+	height:0;
+	clear:both;
+}
+.clearfix{
+    *zoom:1;
+	overflow:hidden;
+}
+.row{
+	width:1140px;
+	margin:0 auto;
+	overflow:hidden;
+}
+/*======公用头部======*/
+.top{
+	height:50px;
+	line-height:50px;
+	color:#ffffff;
+	background:#18a589;
+}
+.top .top_fr a{
+	margin-left:10px;
+	margin-right:10px;	
+}
+.head .logo{
+	margin-top:28px;
+	
+}
+.head .nav a{
+	float:left;
+	width:80px;
+	height:87px;
+	line-height:87px;
+	text-align:center;
+	color:#2c3e50;
+}
+.head .nav a:hover{
+	color:#18a589;
+	border-bottom:3px solid #18a589;
+}
+.head .nav .active{
+	color:#18a589;
+	border-bottom:3px solid #18a589;
+}
+
+/*banner 轮播图*/
+.banner{ width:100%;
+	max-width:1903px;
+	margin:0 auto;
+}
+.banner .ban_box{
+	width:100%;
+	position:relative;
+}
+.banner .ban_box ul{ 
+	width:100%;
+	height:100%;
+	position:relative;
+}
+.banner .ban_box ul li{
+	width:100%;
+	height:100%;
+	position:absolute;
+	left:0;
+	top:0;
+	opacity:0;
+}
+.banner .ban_box ul li.on{
+	opacity:1;
+}
+.banner .ban_box ul li img{
+	width:100%;
+	height:100%;
+}
+.banner .ban_box ol{
+	left:50%;
+	margin-left:-30px;
+	position:absolute;
+	bottom:22px;
+	z-index:11;
+}
+.banner .ban_box ol li{
+	width:10px;
+	height:10px;
+	border-radius:100%;
+	background:#fff;
+	margin:0 5px;
+	float:left;
+	cursor:pointer;
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing:border-box;
+	box-sizing:border-box;
+}
+.banner .ban_box ol li.on{
+	background:#18a589;
+}
+.banner .ban_box .prev,.banner .ban_box .next{
+	position:absolute;
+	top:50%;
+	width:36px;
+	height:48px;
+	line-height:48px;
+	text-align:center;
+	margin-top:-24px;
+	cursor:pointer;
+	z-index:5;
+}
+.banner .ban_box .prev{
+	left:0;
+}
+.banner .ban_box .next{
+	right:0;
+}
+/*banner 轮播图 end*/
+
+/*==========公用头部 end==========*/
+
+/*==========公用尾部==========*/
+.copyright{
+	height:61px;
+	line-height:61px;
+	text-align:center;
+	color:#8e9499;
+	background:#24303a;
+	margin-top:40px;
+}
+/*==========公用尾部 end==========*/
+
+/*==========公用子导航==========*/
+.nav_menu{
+	height:80px;
+	line-height:80px;
+	border-bottom:1px solid #d8d8d8;
+}
+.nav_menu a{
+	float:left;
+	font-size:15px;
+	color:#2c3e50;
+	margin-right:40px;
+}
+.nav_menu .active{
+	color:#18a589;
+}
+/*==========公用子导航 end==========*/
